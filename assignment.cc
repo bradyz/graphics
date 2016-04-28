@@ -72,6 +72,28 @@ std::vector<glm::vec4> sphere_normals;
 
 glm::mat4 shadow_matrix;
 
+struct Sphere {
+  const double radius;
+  glm::vec3 position;
+  glm::vec3 velocity;
+
+  Sphere (double r, const glm::vec3& pos): radius(r), position(pos) { }
+
+  void step (const glm::vec3& force=glm::vec3(0.0, -0.001, 0.0)) { 
+    velocity += force; 
+    position += velocity;
+  }
+
+  glm::mat4 toWorld () const {
+    glm::mat4 T = glm::translate(position);
+    glm::mat4 S = glm::scale(glm::vec3(radius, radius, radius));
+
+    return S * T;
+  }
+};
+
+std::vector<Sphere> objects;
+
 enum {
   kMouseModeCamera,
   kNumMouseModes
@@ -890,6 +912,10 @@ void MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
   current_button = button;
 }
 
+void updatePosition () {
+  
+}
+
 int main(int argc, char* argv[]) {
   if (!glfwInit()) exit(EXIT_FAILURE);
   glfwSetErrorCallback(ErrorCallback);
@@ -932,6 +958,9 @@ int main(int argc, char* argv[]) {
   setupLineSegmentProgram();
   setupFloorProgram();
 
+  objects.push_back(Sphere(5, glm::vec3(0.0, 1.0, 0.0)));
+  objects.push_back(Sphere(3, glm::vec3(0.5, 1.0, 0.0)));
+
   while (glfwWindowShouldClose(window) == false) {
     glfwGetFramebufferSize(window, &window_width, &window_height);
     glViewport(0, 0, window_width, window_height);
@@ -961,23 +990,14 @@ int main(int argc, char* argv[]) {
 
     float dist = 1.5f;
 
-    glm::mat4 T2 = glm::translate(glm::vec3(dist * 2, 0.0f, 0.0f));
-    glm::mat4 T1 = glm::translate(glm::vec3(dist * -1, 0.0f, 0.0f));
-    glm::mat4 S = glm::scale(glm::vec3(4.0f, 4.0f, 4.0f));
-
-    drawPhongGreen(sphere_vertices, sphere_faces, sphere_normals, T1 * S);
-    drawShadow(sphere_vertices, sphere_faces, T1 * S);
-
-    drawPhongGreen(sphere_vertices, sphere_faces, sphere_normals, T2 * S);
-    drawShadow(sphere_vertices, sphere_faces, T2 * S);
+    for (Sphere& sphere: objects) {
+      sphere.step();
+      drawPhongGreen(sphere_vertices, sphere_faces, sphere_normals, sphere.toWorld());
+    }
 
     drawAxis();
-
     drawFloor();
-
-    glm::vec3 mouse = mouseWorld(window);
-
-    drawMouse(mouse);
+    drawMouse(mouseWorld(window));
 
     // Poll and swap.
     glfwPollEvents();
