@@ -47,7 +47,8 @@ if (APPLE)
   find_library(COCOA_LIBRARY Cocoa REQUIRED)
 endif(APPLE)
 
-add_executable(assignment assignment.cc)
+FILE(GLOB SRCFILES *.cpp)
+add_executable(main ${SRCFILES})
 
 if (APPLE)
   set(LDFLAGS "")
@@ -67,7 +68,7 @@ elseif (UNIX)
       "-lXcursor")
 endif()
 
-target_link_libraries(assignment
+target_link_libraries(main
                       ${OPENGL_gl_LIBRARY}
                       ${GLFW_LIBRARIES}
                       ${GLEW_LIBRARY}
