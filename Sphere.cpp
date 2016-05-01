@@ -45,7 +45,7 @@ bool Sphere::intersects (Plane& other, Intersection& isect) {
   glm::vec3 toSphere = position - other.position;
   glm::vec3 proj = other.normal * glm::dot(toSphere, other.normal);
 
-  if (glm::length2(proj) > 1.0f)
+  if (glm::length2(proj) > radius * radius)
     return false;
 
   isect.hit = true;
@@ -54,7 +54,7 @@ bool Sphere::intersects (Plane& other, Intersection& isect) {
 
   float rvNormal = glm::dot(rv, other.normal);
 
-  if (rvNormal > 0.0f)
+  if (rvNormal < 0.0f)
     return true;
 
   float e = 1.0f;

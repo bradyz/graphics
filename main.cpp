@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 
   glm::vec3 normal = normalize(glm::vec3(0.0, 1.0, 0.0));
   Plane plane(glm::vec3(0.0, kFloorY, 0.0), normal, 10.0, 10.0);
-  // plane.velocity = glm::vec3(0.0, 2.5, 0.0);
+  plane.velocity = glm::vec3(0.0, 2.5, 0.0);
 
   vector<glm::vec3> forces;
   forces.push_back(glm::vec3(0.0, -9.8, 0.0));
@@ -94,7 +94,7 @@ int main(int argc, char* argv[]) {
       t1 = Clock::now();
       ms = chrono::duration_cast<milliseconds>(t1 - t0);
 
-      if (ms.count() > 25) {
+      if (ms.count() > 10) {
         vector<Intersection> isects(objects.size());
 
         for (int i = 0; i < objects.size(); ++i) {
