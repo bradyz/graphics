@@ -24,8 +24,8 @@ struct BoundingBox {
   void add (const glm::vec3& point) {
     isEmpty = false;
     for (int i = 0; i < 3; ++i) {
-      minVals[i] = fmin(minVals[i], point[i]);
-      maxVals[i] = fmax(maxVals[i], point[i]);
+      minVals[i] = std::min(minVals[i], point[i]);
+      maxVals[i] = std::max(maxVals[i], point[i]);
     }
   }
 
@@ -44,8 +44,8 @@ struct BoundingBox {
       return;
     isEmpty = false;
     for (int i = 0; i < 3; ++i) {
-      minVals[i] = fmin(minVals[i], other.minVals[i]);
-      maxVals[i] = fmax(maxVals[i], other.maxVals[i]);
+      minVals[i] = std::min(minVals[i], other.minVals[i]);
+      maxVals[i] = std::max(maxVals[i], other.maxVals[i]);
     }
   }
 

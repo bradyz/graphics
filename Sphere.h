@@ -11,7 +11,7 @@
 #include "BoundingBox.h"
 #include "RigidBody.h"
 
-struct Sphere: RigidBody {
+struct Sphere : RigidBody {
   const double radius;
   glm::vec3 position;
 
@@ -43,7 +43,11 @@ struct Sphere: RigidBody {
     return BoundingBox(points);
   }
 
+  // bool intersects (Sphere& other, std::vector<glm::vec3>& forces);
+  // bool intersects (Plane& other, std::vector<glm::vec3>& forces);
+
   bool intersects (Sphere& other);
+  bool intersects (Plane& other);
 };
 
 #endif
