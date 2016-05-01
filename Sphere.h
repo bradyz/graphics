@@ -10,6 +10,7 @@
 #include "Plane.h"
 #include "BoundingBox.h"
 #include "RigidBody.h"
+#include "Intersection.h"
 
 struct Sphere : RigidBody {
   const double radius;
@@ -46,8 +47,11 @@ struct Sphere : RigidBody {
   // bool intersects (Sphere& other, std::vector<glm::vec3>& forces);
   // bool intersects (Plane& other, std::vector<glm::vec3>& forces);
 
-  bool intersects (Sphere& other);
-  bool intersects (Plane& other);
+  // bool intersects (Sphere& other);
+  // bool intersects (Plane& other);
+
+  bool intersects (Sphere& other, Intersection& isect);
+  bool intersects (Plane& other, Intersection& isect);
 };
 
 #endif

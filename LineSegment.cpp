@@ -19,7 +19,7 @@ string LINE_FRAG = "./shaders/line.frag";
 void LineSegmentProgram::setup () {
   this->vaoIndex = kLineSegVao;
 
-  // Setup shaders
+  // shaders
   string vertex_shader = loadShader(LINE_VERT).c_str();
   GLuint vertex_shader_id = setupShader(vertex_shader.c_str(), GL_VERTEX_SHADER);
 
@@ -29,27 +29,28 @@ void LineSegmentProgram::setup () {
   string fragment_shader = loadShader(LINE_FRAG).c_str();
   GLuint fragment_shader_id = setupShader(fragment_shader.c_str(), GL_FRAGMENT_SHADER);
 
-  // Let's create our floor program.
+  // program
   GLuint& program_id = this->programId;
   CHECK_GL_ERROR(program_id = glCreateProgram());
   CHECK_GL_ERROR(glAttachShader(program_id, vertex_shader_id));
   CHECK_GL_ERROR(glAttachShader(program_id, geometry_shader_id));
   CHECK_GL_ERROR(glAttachShader(program_id, fragment_shader_id));
 
-  // Bind attributes.
+  // attributes
   CHECK_GL_ERROR(glBindAttribLocation(program_id, 0, "vertex_position"));
   CHECK_GL_ERROR(glBindFragDataLocation(program_id, 0, "fragment_color"));
 
   glLinkProgram(program_id);
   CHECK_GL_PROGRAM_ERROR(program_id);
 
-  // Get the uniform locations.
-  GLint& projection_matrix_location = this->projection_matrix_location;
-  CHECK_GL_ERROR(projection_matrix_location = glGetUniformLocation(program_id, "projection"));
+  // uniforms
   GLint& model_matrix_location = this->model_matrix_location;
   CHECK_GL_ERROR(model_matrix_location = glGetUniformLocation(program_id, "model"));
   GLint& view_matrix_location = this->view_matrix_location;
   CHECK_GL_ERROR(view_matrix_location = glGetUniformLocation(program_id, "view"));
+  GLint& projection_matrix_location = this->projection_matrix_location;
+  CHECK_GL_ERROR(projection_matrix_location = glGetUniformLocation(program_id, "projection"));
+
   GLint& line_color_location = this->line_color_location;
   CHECK_GL_ERROR(line_color_location = glGetUniformLocation(program_id, "line_color"));
 }
@@ -60,14 +61,14 @@ void LineSegmentProgram::draw (const vector<glm::vec4>& vertices,
                                const glm::vec4& color) {
   CHECK_GL_ERROR(glUseProgram(this->programId));
 
-  CHECK_GL_ERROR(glUniformMatrix4fv(this->projection_matrix_location, 1,
-                                    GL_FALSE, &this->proj[0][0]));
-  CHECK_GL_ERROR(glUniformMatrix4fv(this->view_matrix_location, 
-                                    1, GL_FALSE, &this->view[0][0]));
-  CHECK_GL_ERROR(glUniformMatrix4fv(this->model_matrix_location,
-                                    1, GL_FALSE, &model_matrix[0][0]));
-  CHECK_GL_ERROR(glUniform4fv(this->line_color_location,
-                              1, &color[0]));
+  CHECK_GL_ERROR(glUniformMatrix4fv(this->model_matrix_location, 1, GL_FALSE,
+                                    &model_matrix[0][0]));
+  CHECK_GL_ERROR(glUniformMatrix4fv(this->view_matrix_location, 1, GL_FALSE,
+                                    &this->view[0][0]));
+  CHECK_GL_ERROR(glUniformMatrix4fv(this->projection_matrix_location, 1, GL_FALSE,
+                                    &this->proj[0][0]));
+
+  CHECK_GL_ERROR(glUniform4fv(this->line_color_location, 1, &color[0]));
 
   CHECK_GL_ERROR(glBindVertexArray(array_objects[this->vaoIndex]));
 

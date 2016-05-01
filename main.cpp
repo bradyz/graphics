@@ -15,7 +15,9 @@
 #include "Floor.h"
 #include "Shadow.h"
 #include "LineSegment.h"
+#include "Wire.h"
 
+#include "Intersection.h"
 #include "Plane.h"
 #include "Sphere.h"
 
@@ -30,6 +32,7 @@ PhongProgram phongP(&view_matrix, &projection_matrix);
 FloorProgram floorP(&view_matrix, &projection_matrix);
 ShadowProgram shadowP(&view_matrix, &projection_matrix);
 LineSegmentProgram lineP(&view_matrix, &projection_matrix);
+WireProgram wireP(&view_matrix, &projection_matrix);
 
 vector<Sphere> objects;
 
@@ -53,8 +56,8 @@ int main(int argc, char* argv[]) {
   objects[1].velocity = glm::vec3(-1.5, 2.5, 0.0);
 
   glm::vec3 normal = normalize(glm::vec3(0.0, 1.0, 0.0));
-  Plane plane(glm::vec3(0.0, kFloorY, 0.0), normal, 100, 100);
-  plane.velocity = glm::vec3(0.0, 2.5, 0.0);
+  Plane plane(glm::vec3(0.0, kFloorY, 0.0), normal, 10.0, 10.0);
+  // plane.velocity = glm::vec3(0.0, 2.5, 0.0);
 
   vector<glm::vec3> forces;
   forces.push_back(glm::vec3(0.0, -9.8, 0.0));
@@ -65,6 +68,7 @@ int main(int argc, char* argv[]) {
   floorP.setup();
   shadowP.setup();
   lineP.setup();
+  wireP.setup();
 
   Clock::time_point start = Clock::now();
   Clock::time_point t0 = Clock::now();
@@ -73,52 +77,65 @@ int main(int argc, char* argv[]) {
   milliseconds dt = chrono::duration_cast<milliseconds>(t1 - start);
 
   while (keepLoopingOpenGL()) {
-    floorP.draw();
     lineP.drawAxis();
-    // phongP.draw(plane.vertices, plane.faces, plane.normals, I);
+
+    if (showWire)
+      wireP.draw(plane.vertices, plane.faces, I, BLUE);
+    else
+      floorP.draw();
 
     t0 = t1;
     dt = chrono::duration_cast<milliseconds>(t1 - start);
 
-    // cout << endl << "Current Time: " << dt.count() << endl;
+    if (timePaused == false)
+      cout << endl << "Current Time: " << dt.count() << endl;
 
     while (true) {
       t1 = Clock::now();
       ms = chrono::duration_cast<milliseconds>(t1 - t0);
 
-      if (ms.count() > 5) {
-        vector<bool> hits(objects.size(), false);
+      if (ms.count() > 25) {
+        vector<Intersection> isects(objects.size());
 
         for (int i = 0; i < objects.size(); ++i) {
-          if (objects[i].intersects(plane))
-            hits[i] = true;
+          if (objects[i].intersects(plane, isects[i])) {
+
+          }
 
           for (int j = 0; j < objects.size(); ++j) {
             if (i == j)
               continue;
-            if (objects[i].intersects(objects[j])) {
-              hits[i] = true;
-              hits[j] = true;
+            if (objects[i].intersects(objects[j], isects[i])) {
+
             }
           }
-
-          objects[i].step(forces);
         }
 
         for (int i = 0; i < objects.size(); ++i) {
+          if (isects[i].hit)
+            cout << i << " " << isects[i].displacement << endl;
+
+          if (timePaused == false) {
+            objects[i].step(forces);
+            objects[i].velocity += isects[i].displacement;
+          }
+
           BoundingBox box = objects[i].getBoundingBox();
 
-          if (hits[i])
+          if (isects[i].hit)
             lineP.draw(box.getVertices(), box.getEdges(), I, RED);
           else
             lineP.draw(box.getVertices(), box.getEdges(), I, BLUE);
-        }
 
-        for (Sphere& sphere: objects) {
-          glm::mat4 toWorld = sphere.toWorld();
+          glm::mat4 toWorld = objects[i].toWorld();
 
-          phongP.draw(sphere_vertices, sphere_faces, sphere_normals, toWorld);
-          shadowP.draw(sphere_vertices, sphere_faces, toWorld);
+          if (showWire) {
+            wireP.draw(sphere_vertices, sphere_faces, toWorld, BLUE);
+          }
+          else {
+            phongP.draw(sphere_vertices, sphere_faces, sphere_normals, toWorld);
+            shadowP.draw(sphere_vertices, sphere_faces, toWorld);
+          }
         }
 
         break;

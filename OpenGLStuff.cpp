@@ -58,6 +58,9 @@ const float zoom_speed = 0.1f;
 
 bool fps_mode = false;
 
+bool timePaused = false;
+bool showWire = false;
+
 GLFWwindow* window;
 
 const char* OpenGlErrorToString(GLenum error) {
@@ -128,7 +131,10 @@ void KeyCallback (GLFWwindow* window, int key, int scancode, int action, int mod
     fps_mode = !fps_mode;
   } 
   else if (key == GLFW_KEY_M && action != GLFW_RELEASE) {
-    current_mouse_mode = (current_mouse_mode + 1) % kNumMouseModes;
+    showWire = !showWire;
+  } 
+  else if (key == GLFW_KEY_T && action != GLFW_RELEASE) {
+    timePaused = !timePaused;
   } 
 }
 

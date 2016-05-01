@@ -34,6 +34,9 @@ extern const std::string window_title;
 extern const int WIDTH;
 extern const int HEIGHT;
 
+extern bool timePaused;
+extern bool showWire;
+
 enum {
   kVertexBuffer,
   kIndexBuffer,
@@ -46,6 +49,7 @@ enum {
   kLineSegVao,
   kPhongVao,
   kShadowVao,
+  kWireVao,
   kNumVaos
 };
 
