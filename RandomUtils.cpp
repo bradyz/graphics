@@ -6,7 +6,8 @@
 #include <vector>
 
 #include <glm/glm.hpp>
-#include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/rotate_vector.hpp>                              // scale
+#include <glm/gtx/string_cast.hpp>                                // to_string
 
 using namespace std;
 
@@ -41,9 +42,35 @@ std::ostream& operator<<(std::ostream& os, const glm::mat3& v) {
 }
 }  // namespace glm
 
-void LoadOBJ(const string file, 
+vector<glm::vec4> getVertexNormals (const vector<glm::vec4>& vertices,
+                                    const vector<glm::uvec3>& faces) {
+  vector<glm::vec4> normals(vertices.size());
+  for (const glm::uvec3& face: faces) {
+    int v1 = face[0];
+    int v2 = face[1];
+    int v3 = face[2];
+    glm::vec3 a = glm::vec3(vertices[v1]);
+    glm::vec3 b = glm::vec3(vertices[v2]);
+    glm::vec3 c = glm::vec3(vertices[v3]);
+    glm::vec3 u = glm::normalize(b - a);
+    glm::vec3 v = glm::normalize(c - a);
+    glm::vec4 n = glm::vec4(glm::normalize(glm::cross(u, v)), 0.0f);
+    normals[v1] += n;
+    normals[v2] += n;
+    normals[v3] += n;
+  }
+  for (int i = 0; i < normals.size(); ++i)
+    normals[i] = glm::normalize(normals[i]);
+  return normals;
+}
+
+void LoadOBJ(const string& file, 
              vector<glm::vec4>& vertices,
-             vector<glm::uvec3>& indices) {
+             vector<glm::uvec3>& faces,
+             vector<glm::vec4>& normals) {
+  vertices.clear();
+  faces.clear();
+  normals.clear();
   fstream ifs(file);
   string buffer;
   while (getline(ifs, buffer)) {
@@ -53,7 +80,7 @@ void LoadOBJ(const string file,
     if (type == 'f') {
       int i, j, k;
       ss >> i >> j >> k;
-      indices.push_back(glm::uvec3(i-1, j-1, k-1));
+      faces.push_back(glm::uvec3(i-1, j-1, k-1));
     }
     else if (type == 'v') {
       float x, y, z;
@@ -61,12 +88,19 @@ void LoadOBJ(const string file,
       vertices.push_back(glm::vec4(x, y, z, 1.0));
     }
   }
+  normals = getVertexNormals(vertices, faces);
+  cout << "Loaded " << file << " successfully." << endl;
+  cout << "\t" << vertices.size() << " vertices." << endl;
+  cout << "\t" << faces.size() << " faces." << endl;
 }
 
-void LoadOBJWithNormals(const string file, 
+void LoadOBJWithNormals(const string& file, 
                         vector<glm::vec4>& vertices,
-                        vector<glm::uvec3>& indices,
+                        vector<glm::uvec3>& faces,
                         vector<glm::vec4>& normals) {
+  vertices.clear();
+  faces.clear();
+  normals.clear();
   ifstream ifs(file);
   string buffer;
   while (getline(ifs, buffer)) {
@@ -94,37 +128,24 @@ void LoadOBJWithNormals(const string file,
         }
         idx[i] -= 1;
       }
-      indices.push_back(idx);
+      faces.push_back(idx);
     }
   }
-}
-
-vector<glm::vec4> getVertexNormals (const vector<glm::vec4>& vertices,
-                                    const vector<glm::uvec3>& faces) {
-  vector<glm::vec4> normals(vertices.size());
-  for (const glm::uvec3& face: faces) {
-    int v1 = face[0];
-    int v2 = face[1];
-    int v3 = face[2];
-    glm::vec3 a = glm::vec3(vertices[v1]);
-    glm::vec3 b = glm::vec3(vertices[v2]);
-    glm::vec3 c = glm::vec3(vertices[v3]);
-    glm::vec3 u = glm::normalize(b - a);
-    glm::vec3 v = glm::normalize(c - a);
-    glm::vec4 n = glm::vec4(glm::normalize(glm::cross(u, v)), 0.0f);
-    normals[v1] += n;
-    normals[v2] += n;
-    normals[v3] += n;
-  }
-  for (int i = 0; i < normals.size(); ++i)
-    normals[i] = glm::normalize(normals[i]);
-  return normals;
+  cout << "Loaded " << file << " successfully." << endl;
+  cout << "\t" << vertices.size() << " vertices." << endl;
+  cout << "\t" << faces.size() << " faces." << endl;
 }
 
 string loadShader (const string filename) {
-  cout << filename << endl;
   ifstream file(filename);
   stringstream buffer;
   buffer << file.rdbuf();
   return buffer.str();
+}
+
+void fixSphereVertices (vector<glm::vec4>& sphere_vertices) {
+  glm::mat4 T = glm::translate(glm::vec3(0.0, -1.0, 0.0));
+  glm::mat4 S = glm::scale(glm::vec3(10.0, 10.0, 10.0));
+  for (glm::vec4& vertex: sphere_vertices)
+    vertex = T * S * vertex;
 }

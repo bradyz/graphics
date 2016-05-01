@@ -5,9 +5,8 @@
 
 #include "Program.h"
 
-const float eps = 0.5 * (0.025 + 0.0175);
 const float kFloorLength = 100.0f;
-const float kFloorY = -0.75617 - eps;
+const float kFloorY = -1.0f;
 
 struct FloorProgram: public Program {
   std::vector<glm::vec4> floor_vertices;

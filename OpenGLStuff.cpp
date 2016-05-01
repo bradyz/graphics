@@ -23,7 +23,7 @@ GLuint buffer_objects[kNumVaos][kNumVbos];
 
 int current_mouse_mode = 0;
 
-glm::vec4 LIGHT_POSITION = glm::vec4(3.0f, 3.0f, 3.0f, 1.0f);
+glm::vec4 LIGHT_POSITION = glm::vec4(10.0f, 10.0f, 10.0f, 1.0f);
 const float kNear = 0.0001f;
 const float kFar = 1000.0f;
 const float kFov = 45.0f;

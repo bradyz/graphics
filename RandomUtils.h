@@ -13,19 +13,19 @@ const glm::vec4 WHITE = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 const glm::vec4 CYAN = glm::vec4(0.0f, 1.0f, 1.0f, 1.0f);
 const glm::vec4 RED = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-void LoadOBJ(const std::string file, 
+void LoadOBJ(const std::string& file,
              std::vector<glm::vec4>& vertices,
-             std::vector<glm::uvec3>& indices);
+             std::vector<glm::uvec3>& faces,
+             std::vector<glm::vec4>& normals);
 
-void LoadOBJWithNormals(const std::string file, 
+void LoadOBJWithNormals(const std::string& file, 
                         std::vector<glm::vec4>& vertices,
-                        std::vector<glm::uvec3>& indices,
+                        std::vector<glm::uvec3>& faces,
                         std::vector<glm::vec4>& normals);
 
-std::vector<glm::vec4> getVertexNormals (const std::vector<glm::vec4>& vertices,
-                                         const std::vector<glm::uvec3>& faces);
-
 std::string loadShader(const std::string file);
+
+void fixSphereVertices (std::vector<glm::vec4>& sphere_vertices);
 
 namespace glm {
   std::ostream& operator<<(std::ostream& os, const glm::vec2& v);
