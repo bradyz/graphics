@@ -13,9 +13,7 @@
 
 struct Sphere: RigidBody {
   const double radius;
-
   glm::vec3 position;
-  glm::vec3 velocity;
 
   Sphere (double r, const glm::vec3& pos) : radius(r), position(pos) { }
 
@@ -44,6 +42,8 @@ struct Sphere: RigidBody {
 
     return BoundingBox(points);
   }
+
+  bool intersects (Sphere& other);
 };
 
 #endif

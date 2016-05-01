@@ -6,6 +6,8 @@
 
 #include <glm/glm.hpp>
 
+#include "RandomUtils.h"
+
 const double INF = 1e9;
 
 struct BoundingBox {

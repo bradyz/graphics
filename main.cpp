@@ -47,13 +47,15 @@ int main(int argc, char* argv[]) {
   //
   // LoadOBJWithNormals("./obj/armadillo.obj", arma_vertices, arma_faces, arma_normals);
 
-  objects.push_back(Sphere(1.0, glm::vec3(0.0, 0.0, 0.0)));
+  objects.push_back(Sphere(0.5, glm::vec3(-1.0, 0.0, 0.0)));
+  objects.push_back(Sphere(0.8, glm::vec3(1.0, 0.0, 0.0)));
+  objects[0].velocity = glm::vec3(1.0, 0.0, 0.0);
+  objects[1].velocity = glm::vec3(-1.0, 0.0, 0.0);
 
   // glm::vec3 normal = normalize(glm::vec3(1.0, 1.0, -0.5));
   // Plane plane(glm::vec3(0.0, 0.0, 0.0), normal, 100, 100);
   
   vector<glm::vec3> forces;
-  forces.push_back(glm::vec3(0.0, 0.0, 9.8));
 
   initOpenGL();
 
@@ -63,7 +65,6 @@ int main(int argc, char* argv[]) {
   lineP.setup();
 
   while (keepLoopingOpenGL()) {
-
     floorP.draw();
     lineP.drawAxis();
 
@@ -78,10 +79,28 @@ int main(int argc, char* argv[]) {
 
       phongP.draw(sphere_vertices, sphere_faces, sphere_normals, toWorld);
       shadowP.draw(sphere_vertices, sphere_faces, toWorld);
-
-      BoundingBox box = sphere.getBoundingBox();
-      lineP.draw(box.getVertices(), box.getEdges(), I, BLUE);
     }
+
+    vector<bool> hits(objects.size(), false);
+
+    for (int i = 0; i < objects.size(); ++i) {
+      for (int j = i+1; j < objects.size(); ++j) {
+        if (objects[i].intersects(objects[j])) {
+          hits[i] = true;
+          hits[j] = true;
+        }
+      }
+    }
+
+    for (int i = 0; i < objects.size(); ++i) {
+      BoundingBox box = objects[i].getBoundingBox();
+
+      if (hits[i])
+        lineP.draw(box.getVertices(), box.getEdges(), I, RED);
+      else
+        lineP.draw(box.getVertices(), box.getEdges(), I, BLUE);
+    }
+
 
     endLoopOpenGL();
   }
