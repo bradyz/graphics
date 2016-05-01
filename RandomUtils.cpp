@@ -1,12 +1,45 @@
 #include <string>
 #include <iostream>
+#include <iomanip> 
 #include <fstream>
 #include <sstream>
 #include <vector>
 
 #include <glm/glm.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 using namespace std;
+
+namespace glm {
+std::ostream& operator<<(std::ostream& os, const glm::vec2& v) {
+  os << glm::to_string(v);
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
+  os << glm::to_string(v);
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const glm::vec4& v) {
+  os << glm::to_string(v);
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const glm::mat4& v) {
+  for (int i = 0; i < 4; ++i) {
+    for (int j = 0; j < 4; ++j)
+      os << std::setprecision(3) << v[j][i] << "\t";
+    os << std::endl;
+  }
+  return os;
+}
+
+std::ostream& operator<<(std::ostream& os, const glm::mat3& v) {
+  os << glm::to_string(v);
+  return os;
+}
+}  // namespace glm
 
 void LoadOBJ(const string file, 
              vector<glm::vec4>& vertices,
@@ -88,3 +121,10 @@ vector<glm::vec4> getVertexNormals (const vector<glm::vec4>& vertices,
   return normals;
 }
 
+string loadShader (const string filename) {
+  cout << filename << endl;
+  ifstream file(filename);
+  stringstream buffer;
+  buffer << file.rdbuf();
+  return buffer.str();
+}

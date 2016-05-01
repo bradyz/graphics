@@ -2,6 +2,8 @@
 #define SPHERE_H
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/rotate_vector.hpp>
 
 struct Sphere {
   const double radius;
