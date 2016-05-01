@@ -1,6 +1,13 @@
 *.swp
 *.swo
+*.o
+
 build/
 bin/
-CMakeFiles/
-*.o
+
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Makefile
+cmake_install.cmake
+install_manifest.txt
