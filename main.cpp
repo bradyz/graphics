@@ -35,6 +35,7 @@ LineSegmentProgram lineP(&view_matrix, &projection_matrix);
 WireProgram wireP(&view_matrix, &projection_matrix);
 
 vector<Sphere> objects;
+vector<Plane> planes;
 
 int main(int argc, char* argv[]) {
   vector<glm::vec4> sphere_vertices;
@@ -51,13 +52,20 @@ int main(int argc, char* argv[]) {
   // LoadOBJWithNormals("./obj/armadillo.obj", arma_vertices, arma_faces, arma_normals);
 
   objects.push_back(Sphere(0.5, glm::vec3(-2.0, 0.0, 0.0)));
-  objects.push_back(Sphere(0.8, glm::vec3(2.0, 0.0, 0.0)));
   objects[0].velocity = glm::vec3(1.5, 2.5, 0.0);
+
+  objects.push_back(Sphere(0.8, glm::vec3(2.0, 0.0, 0.0)));
   objects[1].velocity = glm::vec3(-1.5, 2.5, 0.0);
 
-  glm::vec3 normal = normalize(glm::vec3(0.0, 1.0, 0.0));
-  Plane plane(glm::vec3(0.0, kFloorY, 0.0), normal, 10.0, 10.0);
-  plane.velocity = glm::vec3(0.0, 2.5, 0.0);
+  glm::vec3 normal;
+
+  normal = normalize(glm::vec3(0.0, 1.0, 0.0));
+  planes.push_back(Plane(glm::vec3(0.0, kFloorY, 0.0), normal, 10.0, 10.0));
+  planes[0].velocity = glm::vec3(0.0, 2.5, 0.0);
+
+  normal = normalize(glm::vec3(-1.0, 0.0, 0.0));
+  planes.push_back(Plane(glm::vec3(4.0, 0.0, 0.0), normal, 2.0, 2.0));
+  planes[1].velocity = glm::vec3(0.0, 1.0, 0.0);
 
   vector<glm::vec3> forces;
   forces.push_back(glm::vec3(0.0, -9.8, 0.0));
@@ -79,9 +87,11 @@ int main(int argc, char* argv[]) {
   while (keepLoopingOpenGL()) {
     lineP.drawAxis();
 
-    if (showWire)
+    for (Plane& plane: planes) {
       wireP.draw(plane.vertices, plane.faces, I, BLUE);
-    else
+    }
+
+    if (showWire == false)
       floorP.draw();
 
     t0 = t1;
@@ -98,8 +108,10 @@ int main(int argc, char* argv[]) {
         vector<Intersection> isects(objects.size());
 
         for (int i = 0; i < objects.size(); ++i) {
-          if (objects[i].intersects(plane, isects[i])) {
+          for (int j = 0; j < objects.size(); ++j) {
+            if (objects[i].intersects(planes[j], isects[i])) {
 
+            }
           }
 
           for (int j = 0; j < objects.size(); ++j) {
