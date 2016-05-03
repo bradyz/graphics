@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <chrono>
+#include <random>
 
 #include <GL/glew.h>
 
@@ -37,7 +38,7 @@ WireProgram wireP(&view_matrix, &projection_matrix);
 vector<Sphere> objects;
 vector<Plane> planes;
 
-int main(int argc, char* argv[]) {
+int main (int argc, char* argv[]) {
   vector<glm::vec4> sphere_vertices;
   vector<glm::uvec3> sphere_faces;
   vector<glm::vec4> sphere_normals;
@@ -48,24 +49,46 @@ int main(int argc, char* argv[]) {
   // vector<glm::vec4> arma_vertices;
   // vector<glm::uvec3> arma_faces;
   // vector<glm::vec4> arma_normals;
-  //
   // LoadOBJWithNormals("./obj/armadillo.obj", arma_vertices, arma_faces, arma_normals);
 
-  objects.push_back(Sphere(0.5, glm::vec3(-2.0, 0.0, 0.0)));
+  objects.push_back(Sphere(0.5, glm::vec3(-2.0, 0.0, 0.1)));
   objects[0].velocity = glm::vec3(1.5, 2.5, 0.0);
 
-  objects.push_back(Sphere(0.8, glm::vec3(2.0, 0.0, 0.0)));
+  objects.push_back(Sphere(0.3, glm::vec3(2.0, 0.0, -0.1)));
   objects[1].velocity = glm::vec3(-1.5, 2.5, 0.0);
 
+  // for (int i = 0; i <= 1000; ++i) {
+  //   objects.push_back(Sphere((rand() % 3 + 1) * 0.2, glm::vec3(2.0, i * 1.5, -0.5)));
+  //   if (i % 3 == 0)
+  //     objects[i].color = RED;
+  //   if (i % 3 == 1)
+  //     objects[i].color = BLUE;
+  //   if (i % 3 == 2)
+  //     objects[i].color = WHITE;
+  // }
+
+  float bounceK = 0.1;
   glm::vec3 normal;
 
   normal = normalize(glm::vec3(0.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(0.0, kFloorY, 0.0), normal, 10.0, 10.0));
-  planes[0].velocity = glm::vec3(0.0, 2.5, 0.0);
+  planes.push_back(Plane(glm::vec3(0.0, kFloorY-1e-8, 0.0), normal, 10.0, 10.0));
+  planes[0].velocity = glm::vec3(0.0, bounceK, 0.0);
 
-  normal = normalize(glm::vec3(-1.0, 0.0, 0.0));
-  planes.push_back(Plane(glm::vec3(4.0, 0.0, 0.0), normal, 2.0, 2.0));
-  planes[1].velocity = glm::vec3(0.0, 1.0, 0.0);
+  normal = normalize(glm::vec3(-1.0, 1.0, 0.0));
+  planes.push_back(Plane(glm::vec3(4.0, 0.0, 0.0), normal, 5.0, 7.0));
+  planes[1].velocity = glm::vec3(0.0, bounceK, 0.0);
+
+  normal = normalize(glm::vec3(1.0, 1.0, 0.0));
+  planes.push_back(Plane(glm::vec3(-4.0, 0.0, 0.0), normal, 5.0, 7.0));
+  planes[2].velocity = glm::vec3(0.0, bounceK, 0.0);
+
+  normal = normalize(glm::vec3(0.0, 1.0, -1.0));
+  planes.push_back(Plane(glm::vec3(0.0, 0.0, 4.0), normal, 5.0, 7.0));
+  planes[3].velocity = glm::vec3(0.0, bounceK, 0.0);
+
+  normal = normalize(glm::vec3(0.0, 1.0, 1.0));
+  planes.push_back(Plane(glm::vec3(0.0, 0.0, -4.0), normal, 5.0, 7.0));
+  planes[4].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   vector<glm::vec3> forces;
   forces.push_back(glm::vec3(0.0, -9.8, 0.0));
@@ -87,8 +110,18 @@ int main(int argc, char* argv[]) {
   while (keepLoopingOpenGL()) {
     lineP.drawAxis();
 
+    int hack = 0;
+
     for (Plane& plane: planes) {
-      wireP.draw(plane.vertices, plane.faces, I, BLUE);
+      if (hack++ == 0)
+        continue;
+
+      if (showWire == false)
+        phongP.draw(plane.vertices, plane.faces, plane.normals, I);
+      else
+        wireP.draw(plane.vertices, plane.faces, I, BLUE);
+
+      lineP.drawLineSegment(plane.position, plane.position + plane.normal, RED);
     }
 
     if (showWire == false)
@@ -108,7 +141,7 @@ int main(int argc, char* argv[]) {
         vector<Intersection> isects(objects.size());
 
         for (int i = 0; i < objects.size(); ++i) {
-          for (int j = 0; j < objects.size(); ++j) {
+          for (int j = 0; j < planes.size(); ++j) {
             if (objects[i].intersects(planes[j], isects[i])) {
 
             }
@@ -124,8 +157,8 @@ int main(int argc, char* argv[]) {
         }
 
         for (int i = 0; i < objects.size(); ++i) {
-          if (isects[i].hit)
-            cout << i << " " << isects[i].displacement << endl;
+          // if (isects[i].hit)
+          //   cout << i << " " << isects[i].displacement << endl;
 
           if (timePaused == false) {
             objects[i].step(forces);
@@ -134,19 +167,21 @@ int main(int argc, char* argv[]) {
 
           BoundingBox box = objects[i].getBoundingBox();
 
-          if (isects[i].hit)
-            lineP.draw(box.getVertices(), box.getEdges(), I, RED);
-          else
-            lineP.draw(box.getVertices(), box.getEdges(), I, BLUE);
+          if (showWire) {
+            if (isects[i].hit)
+              lineP.draw(box.getVertices(), box.getEdges(), I, RED);
+            else
+              lineP.draw(box.getVertices(), box.getEdges(), I, BLUE);
+          }
 
           glm::mat4 toWorld = objects[i].toWorld();
 
           if (showWire) {
-            wireP.draw(sphere_vertices, sphere_faces, toWorld, BLUE);
+            wireP.draw(sphere_vertices, sphere_faces, toWorld, WHITE);
           }
           else {
-            phongP.draw(sphere_vertices, sphere_faces, sphere_normals, toWorld);
-            shadowP.draw(sphere_vertices, sphere_faces, toWorld);
+            phongP.draw(sphere_vertices, sphere_faces, sphere_normals, toWorld, objects[i].color);
+            // shadowP.draw(sphere_vertices, sphere_faces, toWorld);
           }
         }
 
@@ -156,7 +191,6 @@ int main(int argc, char* argv[]) {
 
     // phongP.draw(arma_vertices, arma_faces, arma_normals, I);
     // shadowP.draw(arma_vertices, arma_faces, I);
-    // phongP.draw(plane.vertices, plane.faces, plane.normals, I);
 
     endLoopOpenGL();
   }

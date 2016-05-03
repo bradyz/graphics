@@ -19,6 +19,8 @@ struct LineSegmentProgram: public Program {
   void draw (const std::vector<glm::vec4>& vertices, 
              const std::vector<glm::uvec2>& segments, 
              const glm::mat4& model_matrix, const glm::vec4& color);
+  void drawLineSegment (const glm::vec3& u, const glm::vec3& v,
+                        const glm::vec4& color);
   void drawAxis();
 };
 

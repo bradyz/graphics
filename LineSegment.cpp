@@ -128,3 +128,15 @@ void LineSegmentProgram::drawAxis () {
 
   this->draw(y_axis_vertices, y_axis_segments, glm::mat4(), RED);
 }
+
+void LineSegmentProgram::drawLineSegment (const glm::vec3& u, const glm::vec3& v,
+                                          const glm::vec4& color) {
+  vector<glm::vec4> points;
+  points.push_back(glm::vec4(u, 1.0));
+  points.push_back(glm::vec4(v, 1.0));
+
+  vector<glm::uvec2> edges;
+  edges.push_back(glm::uvec2(0, 1));
+
+  draw(points, edges, glm::mat4(), color);
+}

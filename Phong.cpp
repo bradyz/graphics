@@ -54,12 +54,15 @@ void PhongProgram::setup () {
 
   GLint& light_position_location = this->light_position_location;
   CHECK_GL_ERROR(light_position_location = glGetUniformLocation(program_id, "light_position"));
+
+  GLint& obj_color_location = this->obj_color_location;
+  CHECK_GL_ERROR(obj_color_location = glGetUniformLocation(program_id, "obj_color"));
 }
 
 void PhongProgram::draw (const vector<glm::vec4>& vertices,
                          const vector<glm::uvec3>& faces,
                          const vector<glm::vec4>& normals,
-                         const glm::mat4& model) {
+                         const glm::mat4& model, const glm::vec4& color) {
   CHECK_GL_ERROR(glUseProgram(this->programId));
 
   CHECK_GL_ERROR(glUniformMatrix4fv(this->model_matrix_location, 1, GL_FALSE,
@@ -70,6 +73,8 @@ void PhongProgram::draw (const vector<glm::vec4>& vertices,
                                     GL_FALSE, &this->proj[0][0]));
 
   CHECK_GL_ERROR(glUniform4fv(this->light_position_location, 1, &LIGHT_POSITION[0]));
+
+  CHECK_GL_ERROR(glUniform4fv(this->obj_color_location, 1, &color[0]));
 
   CHECK_GL_ERROR(glBindVertexArray(array_objects[this->vaoIndex]));
 

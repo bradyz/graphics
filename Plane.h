@@ -47,9 +47,6 @@ struct Plane : RigidBody {
 
       for (glm::vec4& vertex: vertices)
         vertex = R * vertex;
-
-      for (glm::vec4& vertexNormal: normals)
-        vertexNormal = R * vertexNormal;
     }
 
     glm::mat4 T = glm::translate(p);

@@ -12,6 +12,8 @@ struct RigidBody {
   glm::vec3 acceleration;  
   glm::vec3 velocity;  
 
+  glm::vec4 color;
+
   const float mass;
 
   RigidBody () : prev_acceleration(), acceleration(), velocity(), mass(1.0) { }
