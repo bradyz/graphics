@@ -21,6 +21,7 @@
 #include "Intersection.h"
 #include "Plane.h"
 #include "Sphere.h"
+#include "octree.h"
 
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::milliseconds milliseconds;
@@ -38,6 +39,10 @@ WireProgram wireP(&view_matrix, &projection_matrix);
 vector<Sphere> objects;
 vector<Plane> planes;
 
+void broadPhase () {
+
+}
+
 int main (int argc, char* argv[]) {
   vector<glm::vec4> sphere_vertices;
   vector<glm::uvec3> sphere_faces;
@@ -46,48 +51,49 @@ int main (int argc, char* argv[]) {
   LoadOBJ("./obj/sphere.obj", sphere_vertices, sphere_faces, sphere_normals);
   fixSphereVertices(sphere_vertices);
 
-  // vector<glm::vec4> arma_vertices;
-  // vector<glm::uvec3> arma_faces;
-  // vector<glm::vec4> arma_normals;
-  // LoadOBJWithNormals("./obj/armadillo.obj", arma_vertices, arma_faces, arma_normals);
+  int num = 0;
 
-  objects.push_back(Sphere(0.5, glm::vec3(-2.0, 0.0, 0.1)));
-  objects[0].velocity = glm::vec3(1.5, 2.5, 0.0);
+  int dim = 8;
 
-  objects.push_back(Sphere(0.3, glm::vec3(2.0, 0.0, -0.1)));
-  objects[1].velocity = glm::vec3(-1.5, 2.5, 0.0);
+  for (int i = 0; i < dim; ++i) {
+    for (int j = 0; j < dim; ++j) {
+      for (int k = 0; k < dim; ++k) {
+        float x = rand() % 3 - 1.5f;
+        float z = rand() % 3 - 1.5f;
 
-  // for (int i = 0; i <= 1000; ++i) {
-  //   objects.push_back(Sphere((rand() % 3 + 1) * 0.2, glm::vec3(2.0, i * 1.5, -0.5)));
-  //   if (i % 3 == 0)
-  //     objects[i].color = RED;
-  //   if (i % 3 == 1)
-  //     objects[i].color = BLUE;
-  //   if (i % 3 == 2)
-  //     objects[i].color = WHITE;
-  // }
+        float r = 0.01f * (rand() % 100 + 1.0f);
+        float g = 0.01f * (rand() % 100 + 1.0f);
+        float b = 0.01f * (rand() % 100 + 1.0f);
 
-  float bounceK = 0.1;
-  glm::vec3 normal;
+        float rad = (rand() % 3 + 1) * 0.2;
 
-  normal = normalize(glm::vec3(0.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(0.0, kFloorY-1e-8, 0.0), normal, 10.0, 10.0));
+        objects.push_back(Sphere(rad, glm::vec3(i, j + 20.0f, k)));
+        objects[num].color = glm::vec4(r, g, b, 1.0f);
+        objects[num++].mass = glm::clamp(rad, 1.0f, rad);
+      }
+    }
+  }
+
+  float bounceK = 0.00;
+
+  glm::vec3 normal = normalize(glm::vec3(0.0, 1.0, 0.0));
+  planes.push_back(Plane(glm::vec3(0.0, kFloorY-2*1e-8, 0.0), normal, 100.0, 100.0));
   planes[0].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   normal = normalize(glm::vec3(-1.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(4.0, 0.0, 0.0), normal, 5.0, 7.0));
+  planes.push_back(Plane(glm::vec3(4.0, 0.0, 0.0), normal, 100, 100));
   planes[1].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   normal = normalize(glm::vec3(1.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(-4.0, 0.0, 0.0), normal, 5.0, 7.0));
+  planes.push_back(Plane(glm::vec3(-4.0, 0.0, 0.0), normal, 100, 100));
   planes[2].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   normal = normalize(glm::vec3(0.0, 1.0, -1.0));
-  planes.push_back(Plane(glm::vec3(0.0, 0.0, 4.0), normal, 5.0, 7.0));
+  planes.push_back(Plane(glm::vec3(0.0, 0.0, 4.0), normal, 100, 100));
   planes[3].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   normal = normalize(glm::vec3(0.0, 1.0, 1.0));
-  planes.push_back(Plane(glm::vec3(0.0, 0.0, -4.0), normal, 5.0, 7.0));
+  planes.push_back(Plane(glm::vec3(0.0, 0.0, -4.0), normal, 100, 100));
   planes[4].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   vector<glm::vec3> forces;
@@ -111,21 +117,8 @@ int main (int argc, char* argv[]) {
     lineP.drawAxis();
 
     int hack = 0;
-
-    for (Plane& plane: planes) {
-      if (hack++ == 0)
-        continue;
-
-      if (showWire == false)
-        phongP.draw(plane.vertices, plane.faces, plane.normals, I);
-      else
-        wireP.draw(plane.vertices, plane.faces, I, BLUE);
-
-      lineP.drawLineSegment(plane.position, plane.position + plane.normal, RED);
-    }
-
-    if (showWire == false)
-      floorP.draw();
+    // if (showWire == false)
+    //   floorP.draw();
 
     t0 = t1;
     dt = chrono::duration_cast<milliseconds>(t1 - start);
@@ -157,17 +150,13 @@ int main (int argc, char* argv[]) {
         }
 
         for (int i = 0; i < objects.size(); ++i) {
-          // if (isects[i].hit)
-          //   cout << i << " " << isects[i].displacement << endl;
-
           if (timePaused == false) {
-            objects[i].step(forces);
             objects[i].velocity += isects[i].displacement;
+            objects[i].step(forces);
           }
 
-          BoundingBox box = objects[i].getBoundingBox();
-
           if (showWire) {
+            BoundingBox box = objects[i].getBoundingBox();
             if (isects[i].hit)
               lineP.draw(box.getVertices(), box.getEdges(), I, RED);
             else
@@ -176,21 +165,28 @@ int main (int argc, char* argv[]) {
 
           glm::mat4 toWorld = objects[i].toWorld();
 
-          if (showWire) {
+          if (showWire)
             wireP.draw(sphere_vertices, sphere_faces, toWorld, WHITE);
-          }
           else {
             phongP.draw(sphere_vertices, sphere_faces, sphere_normals, toWorld, objects[i].color);
             // shadowP.draw(sphere_vertices, sphere_faces, toWorld);
           }
         }
 
+        for (Plane& plane: planes) {
+          glm::vec4 color(1.0, 1.0, 1.0, 1.0);
+
+          if (showWire == false)
+            phongP.draw(plane.vertices, plane.faces, plane.normals, I, color);
+          else
+            wireP.draw(plane.vertices, plane.faces, I, BLUE);
+
+          lineP.drawLineSegment(plane.position, plane.position + plane.normal, RED);
+        }
+
         break;
       }
     }
-
-    // phongP.draw(arma_vertices, arma_faces, arma_normals, I);
-    // shadowP.draw(arma_vertices, arma_faces, I);
 
     endLoopOpenGL();
   }

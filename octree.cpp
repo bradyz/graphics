@@ -3,22 +3,19 @@
 #include <iostream>
 #include <cstdlib>
 #include <time.h>
+
+#include "octree.h"
 #include "Sphere.h"
 
 using namespace std;
+
+Two mt;
 
 struct Data {
     double r;
     vector<double> c;
     int id;
 } md;
-
-struct Two {
-    int a, b;
-    bool operator < (const Two &other) const {
-        return a < other.a or (a==other.a and b < other.b);
-    }
-} mt;
 
 inline double maxx(double a, double b){
     return a > b ? a : b;
@@ -31,7 +28,7 @@ inline double minn(double a, double b){
 vector<Two> ans;
 set<Two> setans;
 const int MAXLEAF = 50;
-const int MAXLEVEL = 20, MINEDGE = .0000001;
+const int MAXLEVEL = 20;
 
 bool collide(Data one, Data two){
     double sum = 0;
@@ -183,7 +180,7 @@ vector<Two> intersections(vector<Data> spheres){
     return ans;
 }
 
-vector<Two> getCollisions(vector<Sphere> spheres){
+vector<Two> getCollisions (vector<Sphere>& spheres) {
     vector<Data> temp;
     for(int i=0; i<spheres.size(); i++){
         md.r = spheres[i].radius;

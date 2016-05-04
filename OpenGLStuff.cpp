@@ -24,17 +24,18 @@ GLuint buffer_objects[kNumVaos][kNumVbos];
 int current_mouse_mode = 0;
 
 glm::vec4 LIGHT_POSITION = glm::vec4(10.0f, 10.0f, 10.0f, 1.0f);
+
 const float kNear = 0.0001f;
 const float kFar = 1000.0f;
 const float kFov = 45.0f;
-float camera_distance = 5.0f;
+float camera_distance = 15.0f;
 
 glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 look = glm::vec3(0.0f, 0.0f, 1.0f);
 glm::vec3 tangent = glm::vec3(1.0f, 0.0f, 0.0f);
 glm::mat3 orientation = glm::mat3(tangent, up, look);
 
-glm::vec3 eye = glm::vec3(0.0f, 0.1f, camera_distance - 2.0f);
+glm::vec3 eye = glm::vec3(15.0f, 15.0f, camera_distance - 2.0f);
 glm::vec3 center = eye + camera_distance * look;
 
 glm::mat4 view_matrix;
@@ -103,39 +104,41 @@ void ErrorCallback (int error, const char* description) {
 void KeyCallback (GLFWwindow* window, int key, int scancode, int action, int mods) {
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
-  else if (key == GLFW_KEY_W && action != GLFW_RELEASE) {
-    if (fps_mode)
-      eye -= zoom_speed * look;
-    else
-      camera_distance = fmax(0.1f, camera_distance - zoom_speed);
-  } 
-  else if (key == GLFW_KEY_S && action != GLFW_RELEASE) {
-    if (fps_mode)
-      eye += zoom_speed * look;
-    else
-      camera_distance += zoom_speed;
-  } 
-  else if (key == GLFW_KEY_A && action != GLFW_RELEASE) {
-    if (fps_mode)
-      eye -= pan_speed * tangent;
-    else
-      center -= pan_speed * tangent;
-  } 
-  else if (key == GLFW_KEY_D && action != GLFW_RELEASE) {
-    if (fps_mode)
-      eye += pan_speed * tangent;
-    else
-      center += pan_speed * tangent;
-  } 
-  else if (key == GLFW_KEY_C && action != GLFW_RELEASE) {
-    fps_mode = !fps_mode;
-  } 
-  else if (key == GLFW_KEY_M && action != GLFW_RELEASE) {
-    showWire = !showWire;
-  } 
-  else if (key == GLFW_KEY_T && action != GLFW_RELEASE) {
-    timePaused = !timePaused;
-  } 
+  else if (action != GLFW_RELEASE) {
+    if (key == GLFW_KEY_W) {
+      if (fps_mode)
+        eye -= zoom_speed * look;
+      else
+        camera_distance = fmax(0.1f, camera_distance - zoom_speed);
+    } 
+    else if (key == GLFW_KEY_S) {
+      if (fps_mode)
+        eye += zoom_speed * look;
+      else
+        camera_distance += zoom_speed;
+    } 
+    else if (key == GLFW_KEY_A) {
+      if (fps_mode)
+        eye -= pan_speed * tangent;
+      else
+        center -= pan_speed * tangent;
+    } 
+    else if (key == GLFW_KEY_D) {
+      if (fps_mode)
+        eye += pan_speed * tangent;
+      else
+        center += pan_speed * tangent;
+    } 
+    else if (key == GLFW_KEY_C) {
+      fps_mode = !fps_mode;
+    } 
+    else if (key == GLFW_KEY_M) {
+      showWire = !showWire;
+    } 
+    else if (key == GLFW_KEY_T) {
+      timePaused = !timePaused;
+    } 
+  }
 }
 
 void MousePosCallback(GLFWwindow* window, double mouse_x, double mouse_y) {
@@ -239,7 +242,6 @@ bool keepLoopingOpenGL () {
 }
 
 void endLoopOpenGL () {
-  // Poll and swap.
   glfwPollEvents();
   glfwSwapBuffers(window);
 }

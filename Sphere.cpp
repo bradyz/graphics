@@ -10,10 +10,12 @@
 
 using namespace std;
 
+float CHEAT = 0.10;
+
 bool Sphere::intersects (Sphere& other, Intersection& isect) {
   glm::vec3 normal = other.position - position;
 
-  if (glm::length2(normal) > radius + other.radius)
+  if (glm::length2(normal) > radius + other.radius + CHEAT)
     return false;
 
   isect.hit = true;
@@ -46,12 +48,12 @@ bool Sphere::intersects (Plane& other, Intersection& isect) {
   float dotSN = glm::dot(toSphere, other.normal);
   glm::vec3 proj = other.normal * dotSN;
 
-  if (glm::length2(proj) > radius * radius || dotSN < 0.0)
+  if (glm::length2(proj) > radius * radius + CHEAT && dotSN > CHEAT)
     return false;
 
   isect.hit = true;
 
-  glm::vec3 rv = other.velocity - velocity;
+  glm::vec3 rv = other.velocity - 1.1f * velocity;
 
   float rvNormal = glm::dot(rv, other.normal);
 
@@ -69,6 +71,7 @@ bool Sphere::intersects (Plane& other, Intersection& isect) {
   if (false)
     other.velocity += 1.0f / other.mass * impulse;
 
+  // cout << velocity << endl;
   // cout << "rv: " << rv << " dv: " << -1.0f / mass * impulse << endl;
 
   return true;
