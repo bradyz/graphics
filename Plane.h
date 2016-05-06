@@ -13,7 +13,6 @@
 #include "RandomUtils.h"
 
 struct Plane : RigidBody {
-  glm::vec3 position;
   glm::vec3 normal;
 
   std::vector<glm::vec4> vertices;
@@ -24,7 +23,9 @@ struct Plane : RigidBody {
   double wid;
 
   Plane (const glm::vec3& p, const glm::vec3& n, double l, double w) :
-    position(p), normal(glm::normalize(n)), len(l), wid(w) {
+    normal(glm::normalize(n)), len(l), wid(w) {
+    position = p;
+
     vertices.push_back(glm::vec4(-w, 0.0, -l, 1.0));
     vertices.push_back(glm::vec4(-w, 0.0, l, 1.0));
     vertices.push_back(glm::vec4(w, 0.0, -l, 1.0));
@@ -55,7 +56,7 @@ struct Plane : RigidBody {
       vertex = T * vertex;
   }
 
-  BoundingBox getBoundingBox () {
+  virtual BoundingBox getBoundingBox () const {
     return BoundingBox(vertices);
   }
 };

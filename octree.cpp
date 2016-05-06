@@ -6,8 +6,74 @@
 
 #include "octree.h"
 #include "Sphere.h"
+#include "RigidBody.h"
+#include "BoundingBox.h"
 
 using namespace std;
+
+OctTreeNode::OctTreeNode (const vector<RigidBody*>& newObjects,
+                          BoundingBox bbox, int level) :
+  box(bbox) {
+  for (int i = 0; i < 8; ++i)
+    cells[i] = NULL;
+
+  cout << newObjects.size() << " " << level << endl;
+
+  if (newObjects.size() <= 3 || level > 5)
+    return;
+
+  float dx = (box.maxVals[0] - box.minVals[0]) / 2.0f;
+  float dy = (box.maxVals[1] - box.minVals[1]) / 2.0f;
+  float dz = (box.maxVals[2] - box.minVals[2]) / 2.0f;
+
+  // must be uniform
+  assert(abs(dx - dy) < 1e-5 && abs(dy - dz) < 1e-5);
+
+  vector<RigidBody*> items[8];
+  BoundingBox boxes[8];
+
+  int idx = 0;
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      for (int k = 0; k < 2; ++k) {
+        glm::vec3 tmpMin = box.minVals + glm::vec3(i * dx, j * dx, k * dx);
+        boxes[idx++] = BoundingBox(tmpMin, tmpMin + dx);
+      }
+    }
+  }
+
+  for (RigidBody* obj: newObjects) {
+    for (int i = 0; i < 8; ++i) {
+      if (boxes[i].intersects(obj->position)) {
+        items[i].push_back(obj);
+      }
+    }
+  }
+
+  for (int i = 0; i < 8; ++i) {
+    if (items[i].size() > 0)
+      cells[i] = new OctTreeNode(items[i], boxes[i], level+1); 
+  }
+}
+
+void OctTreeNode::getAllBoxes (vector<BoundingBox>& allBoxes) const {
+  float dx = (box.maxVals[0] - box.minVals[0]) / 2.0f;
+
+  int idx = 0;
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < 2; ++j) {
+      for (int k = 0; k < 2; ++k) {
+        glm::vec3 tmpMin = box.minVals + glm::vec3(i * dx, j * dx, k * dx);
+        allBoxes.push_back(BoundingBox(tmpMin, tmpMin + dx));
+
+        if (cells[idx] != NULL)
+          cells[idx]->getAllBoxes(allBoxes);
+
+        ++idx;
+      }
+    }
+  }
+}
 
 Two mt;
 
@@ -197,72 +263,3 @@ double randd(int ma){
     int h = s;
     return s - h + h%ma;
 }
-/*
-int main(){
-    /*double r = 2;
-    int ctos;
-    cin>>ctos;
-    vector<double> es;
-    vector<Data> inp;
-    for(int i=0; i<3; i++) es.push_back(0);
-    for(int i=1; i<=ctos; i++){
-        int a, b;
-        cin>>a>>b;
-        md.r = r;
-        es[0]=a;
-        es[1]=b;
-        md.c = es;
-        inp.push_back(md);
-    }
-    cout<<"Collisions:\n";
-    vector<Two> s = intersections(inp);
-    for(int i=0; i<s.size(); i++){
-        cout<<s[i].a<<" and "<<s[i].b<<endl;
-    }
-
-
-    //srand (time(NULL));
-    int ctos;
-    cin>>ctos;
-    vector<double> es;
-    for(int i=0; i<3; i++) es.push_back(0);
-    vector<Data> inp;
-    for(int i=1; i<=ctos; i++){
-        md.r = randd(1);
-        es[0]=randd(20);
-        es[1]=randd(20);
-        //es[2]=randd(20);
-        md.c = es;
-   //     cout<<md.r<<": "<<es[0]<<", "<<es[1]<<", "<<es[2]<<endl;
-        inp.push_back(md);
-    }
-
-    cout<<"starting fast"<<endl;
-    vector<Two> fast = intersections(inp);
-    cout<<"ok\nstarting slow"<<endl;
-    vector<Two> slow = sloww(inp);
-    cout<<"ok"<<endl;
-    cout<<fast.size()<<" vs "<<slow.size()<<endl;
-    cout<<"..."<<endl;
-    if(fast.size() != slow.size()){
-        for(int i=0; i<fast.size(); i++){
-            cout<<fast[i].a<<" - "<<fast[i].b<<endl;
-        }
-        cout<<"is not"<<endl;
-        for(int i=0; i<slow.size(); i++){
-            cout<<slow[i].a<<" - "<<slow[i].b<<endl;
-        }
-
-        cout<<"Wrong Answer"<<endl;
-        return 0;
-    }
-    for(int i=0; i<fast.size(); i++){
-        if(fast[i].a != slow[i].a or fast[i].b != slow[i].b){
-            cout<<fast[i].a<<", "<<fast[i].b<<" not equal to "<<slow[i].a<<" "<<slow[i].b<<endl;
-            cout<<"Wrong Answer"<<endl;
-            return 0;
-        }
-    }
-    cout<<"Accepted"<<endl;
-    return 0;
-}*/

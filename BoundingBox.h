@@ -21,6 +21,9 @@ struct BoundingBox {
     add(points);
   }
 
+  BoundingBox (const glm::vec3& minV, const glm::vec3& maxV) :
+    isEmpty(false), minVals(minV), maxVals(maxV) { }
+
   void add (const glm::vec3& point) {
     isEmpty = false;
     for (int i = 0; i < 3; ++i) {
@@ -87,9 +90,26 @@ struct BoundingBox {
   }
 
   friend std::ostream& operator<< (std::ostream& os, const BoundingBox& box) {
-    os << "min: " << box.minVals << std::endl;
-    os << "max: " << box.maxVals << std::endl;
+    os << "min: " << box.minVals << " ";
+    os << "max: " << box.maxVals;
     return os;
+  }
+
+  bool intersects(const BoundingBox &rhs) const {
+    return 
+      (rhs.minVals[0] - 1e-5 <= maxVals[0]) && (rhs.maxVals[0] + 1e-5 >= minVals[0]) &&
+      (rhs.minVals[1] - 1e-5 <= maxVals[1]) && (rhs.maxVals[1] + 1e-5 >= minVals[1]) &&
+      (rhs.minVals[2] - 1e-5 <= maxVals[2]) && (rhs.maxVals[2] + 1e-5 >= minVals[2]);
+  }
+
+  bool intersects(const glm::vec3& point) const {
+    return 
+      (point[0] + 1e-5 >= minVals[0]) && 
+      (point[0] - 1e-5 <= maxVals[0]) &&
+      (point[1] + 1e-5 >= minVals[1]) &&
+      (point[1] - 1e-5 <= maxVals[1]) && 
+      (point[2] + 1e-5 >= minVals[2]) && 
+      (point[2] - 1e-5 <= maxVals[2]);
   }
 };
 

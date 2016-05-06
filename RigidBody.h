@@ -5,12 +5,15 @@
 
 #include <glm/glm.hpp>
 
+#include "BoundingBox.h"
+
 const float DT = 0.015f;
 
 struct RigidBody {
   glm::vec3 prev_acceleration;  
   glm::vec3 acceleration;  
   glm::vec3 velocity;  
+  glm::vec3 position;
 
   glm::vec4 color;
 
@@ -31,6 +34,8 @@ struct RigidBody {
 
     return DT * velocity;
   } 
+
+  virtual BoundingBox getBoundingBox () const = 0;
 };
 
 #endif

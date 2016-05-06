@@ -14,9 +14,10 @@
 
 struct Sphere : RigidBody {
   const double radius;
-  glm::vec3 position;
 
-  Sphere (double r, const glm::vec3& pos) : radius(r), position(pos) { }
+  Sphere (double r, const glm::vec3& pos) : radius(r) {
+    position = pos;
+  }
 
   void step (const std::vector<glm::vec3>& forces) { 
     position += RigidBody::stepOffset(forces);
@@ -29,7 +30,7 @@ struct Sphere : RigidBody {
     return T * S;
   }
 
-  BoundingBox getBoundingBox () const {
+  virtual BoundingBox getBoundingBox () const {
     std::vector<glm::vec4> points;
 
     points.push_back(glm::vec4(position.x - radius, position.y, position.z, 1.0));
