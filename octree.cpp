@@ -17,8 +17,6 @@ OctTreeNode::OctTreeNode (const vector<RigidBody*>& newObjects,
   for (int i = 0; i < 8; ++i)
     cells[i] = NULL;
 
-  cout << newObjects.size() << " " << level << endl;
-
   if (newObjects.size() <= 3 || level > 5)
     return;
 

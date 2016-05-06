@@ -44,18 +44,15 @@ vector<Sphere*> objects;
 vector<Plane> planes;
 vector<RigidBody*> object_pointers;
 
-void broadPhase () {
+vector<glm::vec4> sphere_vertices;
+vector<glm::uvec3> sphere_faces;
+vector<glm::vec4> sphere_normals;
+
+void drawBoundingBoxes () {
 
 }
 
-int main (int argc, char* argv[]) {
-  vector<glm::vec4> sphere_vertices;
-  vector<glm::uvec3> sphere_faces;
-  vector<glm::vec4> sphere_normals;
-
-  LoadOBJ("./obj/sphere.obj", sphere_vertices, sphere_faces, sphere_normals);
-  fixSphereVertices(sphere_vertices);
-
+void balls () {
   int dim = 8;
   int count = 0;
 
@@ -74,7 +71,7 @@ int main (int argc, char* argv[]) {
 
         float rad = (rand() % 1 + 1) * 0.1f;
 
-        Sphere* tmp = new Sphere(rad, glm::vec3(i * 2.0, j * 2.0 + 10.0f, k * 2.0));
+        Sphere* tmp = new Sphere(rad, glm::vec3(i * 1.0, j * 1.0 + 10.0f, k * 1.0));
         tmp->color = glm::vec4(r, g, b, 1.0f);
         tmp->mass = 2.0f * glm::clamp(rad, 1.0f, rad);
 
@@ -86,30 +83,22 @@ int main (int argc, char* argv[]) {
   }
 
   glm::vec3 normal = normalize(glm::vec3(0.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(0.0, kFloorY-2*1e-8, 0.0), normal, 100.0, 100.0));
+  planes.push_back(Plane(glm::vec3(0.0, kFloorY-2*1e-8, 0.0), normal, 3.9, 3.9));
 
   normal = normalize(glm::vec3(-1.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(5.0, 0.0, 0.0), normal, 100, 100));
+  planes.push_back(Plane(glm::vec3(5.0, 0.0, 0.0), normal, 4.0f, 4.0f));
 
   normal = normalize(glm::vec3(1.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(-5.0, 0.0, 0.0), normal, 100, 100));
+  planes.push_back(Plane(glm::vec3(-5.0, 0.0, 0.0), normal, 4.0f, 4.0f));
 
   normal = normalize(glm::vec3(0.0, 1.0, -1.0));
-  planes.push_back(Plane(glm::vec3(0.0, 0.0, 5.0), normal, 100, 100));
+  planes.push_back(Plane(glm::vec3(0.0, 0.0, 5.0), normal, 4.0f, 4.0f));
 
   normal = normalize(glm::vec3(0.0, 1.0, 1.0));
-  planes.push_back(Plane(glm::vec3(0.0, 0.0, -5.0), normal, 100, 100));
+  planes.push_back(Plane(glm::vec3(0.0, 0.0, -5.0), normal, 4.0f, 4.0f));
 
   vector<glm::vec3> forces;
   forces.push_back(glm::vec3(0.0, -9.8, 0.0));
-
-  initOpenGL();
-
-  phongP.setup();
-  floorP.setup();
-  shadowP.setup();
-  lineP.setup();
-  wireP.setup();
 
   Clock::time_point start = Clock::now();
   Clock::time_point t0 = Clock::now();
@@ -134,10 +123,8 @@ int main (int argc, char* argv[]) {
 
       if (ms.count() > 20) {
         vector<Intersection> isects(objects.size());
-        vector<Intersection> planeisect(objects.size());
 
         for (int i = 0; i < objects.size(); ++i) {
-
           for (int j = 0; j < planes.size(); ++j) {
             if (objects[i]->intersects(planes[j], isects[i])) {
           
@@ -214,6 +201,87 @@ int main (int argc, char* argv[]) {
 
     endLoopOpenGL();
   }
+}
+
+void boids () {
+  int dim = 8;
+  int count = 0;
+
+  for (int i = 0; i < dim; ++i) {
+    for (int j = 0; j < dim; ++j) {
+      for (int k = 0; k < dim; ++k) {
+        float x = rand() % 3 - 1.5f;
+        float z = rand() % 3 - 1.5f;
+
+        // if (count++ > 100)
+        //   continue;
+
+        float r = 0.01f * (rand() % 100 + 1.0f);
+        float g = 0.01f * (rand() % 100 + 1.0f);
+        float b = 0.01f * (rand() % 100 + 1.0f);
+
+        float rad = (rand() % 1 + 1) * 0.1f;
+
+        Sphere* tmp = new Sphere(rad, glm::vec3(i * 1.0, j * 1.0 + 10.0f, k * 1.0));
+        tmp->color = glm::vec4(r, g, b, 1.0f);
+        tmp->mass = 2.0f * glm::clamp(rad, 1.0f, rad);
+
+        objects.push_back(tmp);
+
+        object_pointers.push_back((RigidBody*)objects.back());
+      }
+    }
+  }
+
+  glm::vec3 normal = normalize(glm::vec3(0.0, 1.0, 0.0));
+  planes.push_back(Plane(glm::vec3(0.0, kFloorY-2*1e-8, 0.0), normal, 100.0, 100.0));
+
+  while (keepLoopingOpenGL()) {
+    lineP.drawAxis();
+
+    if (showWire) {
+      OctTreeNode root(object_pointers, BoundingBox(minB, maxB));
+
+      vector<BoundingBox> octtreeBoxes;
+
+      root.getAllBoxes(octtreeBoxes);
+
+      for (BoundingBox& box: octtreeBoxes) {
+        vector<glm::vec4> vertices = box.getVertices();
+        vector<glm::uvec2> edges = box.getEdges();
+
+        for (glm::uvec2 edge: edges) {
+          glm::vec3 u = glm::vec3(vertices[edge[0]]);
+          glm::vec3 v = glm::vec3(vertices[edge[1]]);
+          lineP.drawLineSegment(u, v, RED);
+        }
+      }
+    }
+
+    for (int i = 0; i < objects.size(); ++i) {
+      if (timePaused == false) {
+        // objects[i]->velocity += isects[i].displacement;
+        // objects[i]->step(forces);
+      }
+    }
+
+    endLoopOpenGL();
+  }
+}
+
+int main (int argc, char* argv[]) {
+  LoadOBJ("./obj/sphere.obj", sphere_vertices, sphere_faces, sphere_normals);
+  fixSphereVertices(sphere_vertices);
+
+  initOpenGL();
+
+  phongP.setup();
+  floorP.setup();
+  shadowP.setup();
+  lineP.setup();
+  wireP.setup();
+
+  balls();
 
   cleanupOpenGL();
 }
