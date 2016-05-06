@@ -15,6 +15,7 @@ using namespace std;
 
 enum {
   kMouseModeCamera,
+  kFoodMode,
   kNumMouseModes
 };
 
@@ -26,7 +27,7 @@ int current_mouse_mode = 0;
 glm::vec4 LIGHT_POSITION = glm::vec4(10.0f, 10.0f, 10.0f, 1.0f);
 
 const float kNear = 0.0001f;
-const float kFar = 100.0f;
+const float kFar = 150.0f;
 const float kFov = 45.0f;
 float camera_distance = 2.0f;
 
@@ -62,6 +63,9 @@ bool fps_mode = false;
 bool timePaused = true;
 bool showWire = false;
 bool showFloor = true;
+
+bool hasFood = false;
+glm::vec3 foodPos;
 
 GLFWwindow* window;
 
@@ -142,7 +146,25 @@ void KeyCallback (GLFWwindow* window, int key, int scancode, int action, int mod
     else if (key == GLFW_KEY_F) {
       showFloor = !showFloor;
     } 
+    else if (key == GLFW_KEY_P) {
+      current_mouse_mode = (current_mouse_mode + 1) % kNumMouseModes;
+      hasFood = (current_mouse_mode == kFoodMode);
+    } 
   }
+}
+
+glm::vec3 mouseWorld (GLFWwindow* window) {
+  glm::vec4 viewport = glm::vec4(0.0f, 0.0f, WIDTH, HEIGHT);
+
+  double x, y;
+  float z;
+
+  glfwGetCursorPos(window, &x, &y);
+  glReadPixels(x, viewport[3]-y, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &z);
+
+  glm::vec3 mouseNDC = glm::vec3(x, viewport[3]-y, z);
+
+  return glm::unProject(mouseNDC, view_matrix, projection_matrix, viewport);
 }
 
 void MousePosCallback(GLFWwindow* window, double mouse_x, double mouse_y) {
@@ -169,6 +191,9 @@ void MousePosCallback(GLFWwindow* window, double mouse_x, double mouse_y) {
       look = glm::column(orientation, 2);
       tangent = glm::cross(up, look);
     }
+  }
+  if (current_button == GLFW_MOUSE_BUTTON_LEFT && current_mouse_mode == kFoodMode) {
+    foodPos = mouseWorld(window);
   }
 }
 
@@ -220,7 +245,7 @@ bool keepLoopingOpenGL () {
 
   glfwGetFramebufferSize(window, &window_width, &window_height);
   glViewport(0, 0, window_width, window_height);
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+  glClearColor(0.9f, 0.9f, 0.9f, 0.9f);
   glEnable(GL_DEPTH_TEST);
   glEnable(GL_MULTISAMPLE);
   glEnable(GL_BLEND);

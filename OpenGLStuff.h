@@ -38,6 +38,9 @@ extern bool timePaused;
 extern bool showWire;
 extern bool showFloor;
 
+extern bool hasFood;
+extern glm::vec3 foodPos;
+
 enum {
   kVertexBuffer,
   kIndexBuffer,
