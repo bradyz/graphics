@@ -264,8 +264,8 @@ void boids () {
           continue;
         centerMass += objects[j]->position;
         float dist = glm::length2(objects[j]->position - objects[i]->position);
-        if (dist < (objects[i]->radius + objects[j]->radius) * 2.5f)
-          getAway += 2.5f * dist * glm::normalize(objects[i]->position - objects[j]->position);
+        if (dist < (objects[i]->radius + objects[j]->radius) * 3.5f)
+          getAway += 3.5f * dist * glm::normalize(objects[i]->position - objects[j]->position);
         distMap.insert(pair<float, Sphere*>(dist, objects[j]));
       }
 
