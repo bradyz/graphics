@@ -137,6 +137,7 @@ void balls () {
         }
 
         for (int i = 0; i < objects.size(); ++i) {
+          cout << i << " " << objects.size() << endl;
           if (showWire) {
             BoundingBox box = objects[i]->getBoundingBox();
             if (isects[i].hit)
@@ -190,7 +191,6 @@ void balls () {
           }
         }
 
-
         break;
       }
     }
@@ -206,7 +206,7 @@ void boids () {
 
   BoundingBox theBounds(minB, maxB);
 
-  int dim = 5;
+  int dim = 6;
   int count = 0;
 
   for (int i = 0; i < dim; ++i) {
@@ -235,8 +235,12 @@ void boids () {
   while (keepLoopingOpenGL()) {
     lineP.drawAxis();
 
-    if (hasFood)
-      foodPos = glm::clamp(foodPos, -BOUNDS, BOUNDS);
+    if (hasFood) {
+      glm::vec3 tmp = glm::normalize(foodPos - eye);
+      glm::vec3 tmp1 = glm::vec3(0, 0, 0) - eye;
+      float t = glm::length(glm::dot(tmp, tmp1) * tmp);
+      foodPos = eye + tmp * t;
+    }
 
     int leader = rand() % objects.size();
 
@@ -348,8 +352,10 @@ void boids () {
     }
 
     if (hasFood) {
+      glm::mat4 T = glm::translate(foodPos);
+      glm::mat4 S = glm::scale(glm::vec3(0.5f, 0.5f, 0.5f));
       phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
-                  glm::translate(foodPos), RED, glm::vec4(eye, 1.0f));
+                  T * S, RED, glm::vec4(eye, 1.0f));
     }
 
     endLoopOpenGL();
