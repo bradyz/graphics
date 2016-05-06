@@ -26,17 +26,17 @@ int current_mouse_mode = 0;
 glm::vec4 LIGHT_POSITION = glm::vec4(10.0f, 10.0f, 10.0f, 1.0f);
 
 const float kNear = 0.0001f;
-const float kFar = 1000.0f;
+const float kFar = 100.0f;
 const float kFov = 45.0f;
 float camera_distance = 2.0f;
 
-glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 look = glm::vec3(0.0f, 0.0f, 1.0f);
-glm::vec3 tangent = glm::vec3(1.0f, 0.0f, 0.0f);
-glm::mat3 orientation = glm::mat3(tangent, up, look);
+glm::vec3 eye = glm::vec3(5.0f, 5.0f, 5.0f);
+glm::vec3 center = glm::vec3(0.0f, 0.0f, 0.0f);
 
-glm::vec3 eye = glm::vec3(5.0f, 5.0f, camera_distance - 2.0f);
-glm::vec3 center = eye + camera_distance * look;
+glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 look = eye - center;
+glm::vec3 tangent = glm::cross(up, look);
+glm::mat3 orientation = glm::mat3(tangent, up, look);
 
 glm::mat4 view_matrix;
 glm::mat4 projection_matrix;
@@ -61,6 +61,7 @@ bool fps_mode = false;
 
 bool timePaused = false;
 bool showWire = false;
+bool showFloor = true;
 
 GLFWwindow* window;
 
@@ -138,6 +139,9 @@ void KeyCallback (GLFWwindow* window, int key, int scancode, int action, int mod
     else if (key == GLFW_KEY_T) {
       timePaused = !timePaused;
     } 
+    else if (key == GLFW_KEY_F) {
+      showFloor = !showFloor;
+    } 
   }
 }
 
@@ -150,7 +154,7 @@ void MousePosCallback(GLFWwindow* window, double mouse_x, double mouse_y) {
   float delta_x = current_x - last_x;
   float delta_y = current_y - last_y;
 
-  if (delta_x * delta_x + delta_y * delta_y < 1e-15)
+  if (delta_x * delta_x + delta_y * delta_y < 1e-5)
     return;
 
   glm::vec3 mouse_direction = glm::normalize(glm::vec3(delta_x, delta_y, 0.0f));
@@ -160,6 +164,7 @@ void MousePosCallback(GLFWwindow* window, double mouse_x, double mouse_y) {
 
   if (drag_state && current_button == GLFW_MOUSE_BUTTON_LEFT) {
     if (current_mouse_mode == kMouseModeCamera) {
+      up = glm::vec3(0.0f, 1.0f, 0.0f);
       orientation = glm::mat3(glm::rotate(rotation_speed, axis) * glm::mat4(orientation));
       look = glm::column(orientation, 2);
       tangent = glm::cross(up, look);

@@ -65,11 +65,11 @@ int main (int argc, char* argv[]) {
         float g = 0.01f * (rand() % 100 + 1.0f);
         float b = 0.01f * (rand() % 100 + 1.0f);
 
-        float rad = (rand() % 3 + 1) * 0.15f;
+        float rad = (rand() % 1 + 1) * 0.1f;
 
         objects.push_back(Sphere(rad, glm::vec3(i * 2.0, j * 2.0 + 10.0f, k * 2.0)));
         objects[num].color = glm::vec4(r, g, b, 1.0f);
-        objects[num++].mass = glm::clamp(rad, 1.0f, rad);
+        objects[num++].mass = 2.0f * glm::clamp(rad, 1.0f, rad);
       }
     }
   }
@@ -78,16 +78,16 @@ int main (int argc, char* argv[]) {
   planes.push_back(Plane(glm::vec3(0.0, kFloorY-2*1e-8, 0.0), normal, 100.0, 100.0));
 
   normal = normalize(glm::vec3(-1.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(4.0, 0.0, 0.0), normal, 100, 100));
+  planes.push_back(Plane(glm::vec3(3.0, 0.0, 0.0), normal, 100, 100));
 
   normal = normalize(glm::vec3(1.0, 1.0, 0.0));
-  planes.push_back(Plane(glm::vec3(-4.0, 0.0, 0.0), normal, 100, 100));
+  planes.push_back(Plane(glm::vec3(-3.0, 0.0, 0.0), normal, 100, 100));
 
   normal = normalize(glm::vec3(0.0, 1.0, -1.0));
-  planes.push_back(Plane(glm::vec3(0.0, 0.0, 4.0), normal, 100, 100));
+  planes.push_back(Plane(glm::vec3(0.0, 0.0, 3.0), normal, 100, 100));
 
   normal = normalize(glm::vec3(0.0, 1.0, 1.0));
-  planes.push_back(Plane(glm::vec3(0.0, 0.0, -4.0), normal, 100, 100));
+  planes.push_back(Plane(glm::vec3(0.0, 0.0, -3.0), normal, 100, 100));
 
   vector<glm::vec3> forces;
   forces.push_back(glm::vec3(0.0, -9.8, 0.0));
@@ -110,8 +110,6 @@ int main (int argc, char* argv[]) {
     lineP.drawAxis();
 
     int hack = 0;
-    // if (showWire == false)
-    //   floorP.draw();
 
     t0 = t1;
     dt = chrono::duration_cast<milliseconds>(t1 - start);
@@ -125,11 +123,12 @@ int main (int argc, char* argv[]) {
 
       if (ms.count() > 20) {
         vector<Intersection> isects(objects.size());
+        vector<Intersection> planeisect(objects.size());
 
         for (int i = 0; i < objects.size(); ++i) {
           for (int j = 0; j < planes.size(); ++j) {
             if (objects[i].intersects(planes[j], isects[i])) {
-
+          
             }
           }
 
@@ -168,14 +167,16 @@ int main (int argc, char* argv[]) {
         }
 
         for (Plane& plane: planes) {
-          glm::vec4 color(0.0f, 1.0f, 1.0f, 1.0f);
+          glm::vec4 color(0.72f, 0.60, 0.41, 1.0f);
 
-          if (showWire)
-            wireP.draw(plane.vertices, plane.faces, I, BLUE);
-          else {
-            phongP.draw(plane.vertices, plane.faces, plane.normals,
-                        I, color, glm::vec4(eye, 1.0f));
-            
+          if (showFloor) {
+            if (showWire) {
+              wireP.draw(plane.vertices, plane.faces, I, BLUE);
+            }
+            else {
+              phongP.draw(plane.vertices, plane.faces, plane.normals,
+                  I, color, glm::vec4(eye, 1.0f));
+            }
           }
 
           lineP.drawLineSegment(plane.position, plane.position + plane.normal, RED);

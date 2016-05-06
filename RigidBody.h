@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-const float DT = 0.0150;
+const float DT = 0.015f;
 
 struct RigidBody {
   glm::vec3 prev_acceleration;  
@@ -24,11 +24,12 @@ struct RigidBody {
     for (const glm::vec3& force: forces)
       total_force += force;
 
-    velocity += (prev_acceleration + total_force / mass) / 2.0f * DT;
-    velocity = 0.9995f * glm::clamp(velocity, -25.0f, 25.0f);
+    acceleration = total_force / mass;
+    velocity += (prev_acceleration + acceleration) / 2.0f * DT;
+    velocity = 0.95f * glm::clamp(velocity, -25.0f, 25.0f);
     prev_acceleration = acceleration;
 
-    return DT * (velocity + 0.5f * prev_acceleration);
+    return DT * velocity;
   } 
 };
 

@@ -36,6 +36,7 @@ extern const int HEIGHT;
 
 extern bool timePaused;
 extern bool showWire;
+extern bool showFloor;
 
 enum {
   kVertexBuffer,

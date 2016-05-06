@@ -10,12 +10,10 @@
 
 using namespace std;
 
-float CHEAT = 0.10;
-
 bool Sphere::intersects (Sphere& other, Intersection& isect) {
   glm::vec3 normal = other.position - position;
 
-  if (glm::length2(normal) > radius + other.radius + CHEAT)
+  if (glm::length(normal) > radius + other.radius)
     return false;
 
   isect.hit = true;
@@ -29,14 +27,8 @@ bool Sphere::intersects (Sphere& other, Intersection& isect) {
   if (rvNormal > 0.0f)
     return true;
 
-  float e = 1.0f;
-
-  float j = -(1.0f + e) * rvNormal / ((1.0f / mass) + (1.0f / other.mass));
-
+  float j = -(2.0f) * rvNormal / ((1.0f / mass) + (1.0f / other.mass));
   glm::vec3 impulse = j * normal;
-
-  // velocity -= 1.0f / mass * impulse;
-  // other.velocity += 1.0f / other.mass * impulse;
 
   isect.displacement += -1.0f / mass * impulse;
 
@@ -47,32 +39,22 @@ bool Sphere::intersects (Plane& other, Intersection& isect) {
   glm::vec3 toSphere = position - other.position;
   float dotSN = glm::dot(toSphere, other.normal);
   glm::vec3 proj = other.normal * dotSN;
+  float penetrate = glm::length(proj);
 
-  if (glm::length2(proj) > radius * radius + CHEAT && dotSN > CHEAT)
+  if (penetrate > radius)
     return false;
 
   isect.hit = true;
 
-  glm::vec3 rv = other.velocity - 1.1f * velocity;
-
+  glm::vec3 rv = other.velocity - velocity;
   float rvNormal = glm::dot(rv, other.normal);
-
-  if (rvNormal < 0.0f)
-    return true;
-
-  float e = 1.0f;
-  float j = -(1.0f + e) * rvNormal / ((1.0f / mass) + (1.0f / other.mass));
-
+  float j = -0.35f * rvNormal;
   glm::vec3 impulse = j * other.normal;
 
-  // velocity -= 1.0f / mass * impulse;
   isect.displacement += -1.0f / mass * impulse;
-
-  if (false)
-    other.velocity += 1.0f / other.mass * impulse;
-
-  // cout << velocity << endl;
-  // cout << "rv: " << rv << " dv: " << -1.0f / mass * impulse << endl;
+  
+  if (penetrate > 0.01f)
+    position += glm::length(proj) * other.normal;
 
   return true;
 }

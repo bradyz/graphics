@@ -18,7 +18,7 @@ out vec4 world_pos;
 void main() {
   for (int i = 0; i < gl_in.length(); i++) {
     normal = model * vs_vertex_normal[i];
-    light = normalize(vs_light_direction[i]);
+    light = vs_light_direction[i];
     world_pos = vs_world_pos[i];
     gl_Position = projection * view * model * gl_in[i].gl_Position;
     EmitVertex();

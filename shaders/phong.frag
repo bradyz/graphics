@@ -13,12 +13,8 @@ void main() {
   vec4 to_eye = eye - world_pos;
   float dot_nl = dot(normalize(light), normalize(normal));
 
-  float specular = clamp(dot(normalize(normal), normalize(to_eye)), 0.0f, 1.0f);
-  specular = pow(specular, 100);
+  float KS = pow(clamp(dot(normalize(normal), normalize(to_eye)), 0.0f, 1.0f), 100);
+  float KD = clamp(dot_nl, 0.0f, 1.0f);
 
-  vec3 diffuse = vec3(obj_color.xyz) * clamp(dot_nl, 0.0f, 1.0f);
-
-  vec3 color = diffuse + specular * diffuse; 
-
-  fragment_color = clamp(vec4(color, obj_color.w), 0.0f, 1.0f);
+  fragment_color = clamp(vec4((KD + KS) * obj_color.xyz, obj_color.w), 0.0f, 1.0f);
 }
