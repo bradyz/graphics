@@ -9,14 +9,17 @@ uniform mat4 view;
 
 in vec4 vs_light_direction[];
 in vec4 vs_vertex_normal[];
+in vec4 vs_world_pos[];
 
-out vec4 face_normal;
-out vec4 light_direction;
+out vec4 normal;
+out vec4 light;
+out vec4 world_pos;
 
 void main() {
   for (int i = 0; i < gl_in.length(); i++) {
-    face_normal = model * vs_vertex_normal[i];
-    light_direction = normalize(vs_light_direction[i]);
+    normal = model * vs_vertex_normal[i];
+    light = normalize(vs_light_direction[i]);
+    world_pos = vs_world_pos[i];
     gl_Position = projection * view * model * gl_in[i].gl_Position;
     EmitVertex();
   }

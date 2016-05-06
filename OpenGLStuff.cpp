@@ -28,14 +28,14 @@ glm::vec4 LIGHT_POSITION = glm::vec4(10.0f, 10.0f, 10.0f, 1.0f);
 const float kNear = 0.0001f;
 const float kFar = 1000.0f;
 const float kFov = 45.0f;
-float camera_distance = 15.0f;
+float camera_distance = 2.0f;
 
 glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
 glm::vec3 look = glm::vec3(0.0f, 0.0f, 1.0f);
 glm::vec3 tangent = glm::vec3(1.0f, 0.0f, 0.0f);
 glm::mat3 orientation = glm::mat3(tangent, up, look);
 
-glm::vec3 eye = glm::vec3(15.0f, 15.0f, camera_distance - 2.0f);
+glm::vec3 eye = glm::vec3(5.0f, 5.0f, camera_distance - 2.0f);
 glm::vec3 center = eye + camera_distance * look;
 
 glm::mat4 view_matrix;
@@ -231,7 +231,7 @@ bool keepLoopingOpenGL () {
   else
     eye = center + camera_distance * look;
 
-  up = glm::vec3(0.0f, 1.0f, 0.0f);
+  // up = glm::vec3(0.0f, 1.0f, 0.0f);
 
   view_matrix = glm::lookAt(eye, center, up);
   projection_matrix = glm::perspective(static_cast<float>(kFov * (M_PI / 180.0f)),

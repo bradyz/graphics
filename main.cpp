@@ -65,36 +65,29 @@ int main (int argc, char* argv[]) {
         float g = 0.01f * (rand() % 100 + 1.0f);
         float b = 0.01f * (rand() % 100 + 1.0f);
 
-        float rad = (rand() % 3 + 1) * 0.2;
+        float rad = (rand() % 3 + 1) * 0.15f;
 
-        objects.push_back(Sphere(rad, glm::vec3(i, j + 20.0f, k)));
+        objects.push_back(Sphere(rad, glm::vec3(i * 2.0, j * 2.0 + 10.0f, k * 2.0)));
         objects[num].color = glm::vec4(r, g, b, 1.0f);
         objects[num++].mass = glm::clamp(rad, 1.0f, rad);
       }
     }
   }
 
-  float bounceK = 0.00;
-
   glm::vec3 normal = normalize(glm::vec3(0.0, 1.0, 0.0));
   planes.push_back(Plane(glm::vec3(0.0, kFloorY-2*1e-8, 0.0), normal, 100.0, 100.0));
-  planes[0].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   normal = normalize(glm::vec3(-1.0, 1.0, 0.0));
   planes.push_back(Plane(glm::vec3(4.0, 0.0, 0.0), normal, 100, 100));
-  planes[1].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   normal = normalize(glm::vec3(1.0, 1.0, 0.0));
   planes.push_back(Plane(glm::vec3(-4.0, 0.0, 0.0), normal, 100, 100));
-  planes[2].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   normal = normalize(glm::vec3(0.0, 1.0, -1.0));
   planes.push_back(Plane(glm::vec3(0.0, 0.0, 4.0), normal, 100, 100));
-  planes[3].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   normal = normalize(glm::vec3(0.0, 1.0, 1.0));
   planes.push_back(Plane(glm::vec3(0.0, 0.0, -4.0), normal, 100, 100));
-  planes[4].velocity = glm::vec3(0.0, bounceK, 0.0);
 
   vector<glm::vec3> forces;
   forces.push_back(glm::vec3(0.0, -9.8, 0.0));
@@ -130,7 +123,7 @@ int main (int argc, char* argv[]) {
       t1 = Clock::now();
       ms = chrono::duration_cast<milliseconds>(t1 - t0);
 
-      if (ms.count() > 10) {
+      if (ms.count() > 20) {
         vector<Intersection> isects(objects.size());
 
         for (int i = 0; i < objects.size(); ++i) {
@@ -168,18 +161,22 @@ int main (int argc, char* argv[]) {
           if (showWire)
             wireP.draw(sphere_vertices, sphere_faces, toWorld, WHITE);
           else {
-            phongP.draw(sphere_vertices, sphere_faces, sphere_normals, toWorld, objects[i].color);
+            phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
+                        toWorld, objects[i].color, glm::vec4(eye, 1.0f));
             // shadowP.draw(sphere_vertices, sphere_faces, toWorld);
           }
         }
 
         for (Plane& plane: planes) {
-          glm::vec4 color(1.0, 1.0, 1.0, 1.0);
+          glm::vec4 color(0.0f, 1.0f, 1.0f, 1.0f);
 
-          if (showWire == false)
-            phongP.draw(plane.vertices, plane.faces, plane.normals, I, color);
-          else
+          if (showWire)
             wireP.draw(plane.vertices, plane.faces, I, BLUE);
+          else {
+            phongP.draw(plane.vertices, plane.faces, plane.normals,
+                        I, color, glm::vec4(eye, 1.0f));
+            
+          }
 
           lineP.drawLineSegment(plane.position, plane.position + plane.normal, RED);
         }
