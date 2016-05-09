@@ -47,8 +47,15 @@ if (APPLE)
   find_library(COCOA_LIBRARY Cocoa REQUIRED)
 endif(APPLE)
 
-FILE(GLOB SRCFILES *.cpp)
-add_executable(main ${SRCFILES})
+FILE(GLOB BOID_SRC *.cpp)
+list(REMOVE_ITEM BOID_SRC ${CMAKE_CURRENT_SOURCE_DIR}/balls.cpp)
+add_executable(boids ${BOID_SRC})
+
+FILE(GLOB BALLS_SRC *.cpp)
+MESSAGE(${BALLS_SRC})
+list(REMOVE_ITEM BALLS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/boids.cpp)
+MESSAGE(${BALLS_SRC})
+add_executable(balls ${BALLS_SRC})
 
 if (APPLE)
   set(LDFLAGS "")
@@ -68,10 +75,16 @@ elseif (UNIX)
       "-lXcursor")
 endif()
 
-target_link_libraries(main
+target_link_libraries(boids
                       ${OPENGL_gl_LIBRARY}
                       ${GLFW_LIBRARIES}
                       ${GLEW_LIBRARY}
                       ${JPEG_LIBRARIES}
-                      ${LDFLAGS}
-)
+                      ${LDFLAGS})
+
+target_link_libraries(balls
+                      ${OPENGL_gl_LIBRARY}
+                      ${GLFW_LIBRARIES}
+                      ${GLEW_LIBRARY}
+                      ${JPEG_LIBRARIES}
+                      ${LDFLAGS})
