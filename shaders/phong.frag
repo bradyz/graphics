@@ -13,7 +13,7 @@ void main() {
   vec4 to_eye = normalize(eye - world_pos);
   float dot_nl = dot(normalize(light), normalize(normal));
 
-  vec4 H = normalize(light + to_eye);
+  vec4 H = normalize(normalize(light) + to_eye);
 
   float KS = pow(clamp(dot(normalize(normal), H), 0.0f, 1.0f), 200);
   float KD = clamp(dot_nl, 0.0f, 1.0f);

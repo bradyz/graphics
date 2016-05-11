@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <unordered_set>
 
 #include <GL/glew.h>
 #include <glm/glm.hpp>
@@ -49,8 +50,75 @@ vec4 barycenter (const vec4& a, const vec4& b, const vec4& c) {
   return bary / 3.0f;
 }
 
+struct vec4_sort {
+  bool operator() (const vec4& a, const vec4& b) const {
+    for (int i = 0; i < 4; ++i) {
+      if (a[i] == b[i])
+        continue;
+      return a[i] < b[i]; 
+    }
+    return false;
+  }
+};
+
+struct vec4_eq {
+  bool operator() (const vec4& a, const vec4& b) {
+    return a == b;
+  }
+};
+
 void subdivide (vector<vec4>& vertices, vector<uvec3>& faces, 
                 vector<vec4>& v, vector<uvec3>& f) {
+  v.clear();
+  f.clear();
+
+  map<int, vector<int> > vertexFaces;
+  map<vec4, int, vec4_sort> dupeVertCheck;
+
+  for (const vec4& vert: vertices)
+    dupeVertCheck.insert(make_pair(vert, dupeVertCheck.size()));
+
+  for (int i = 0; i < faces.size(); ++i) {
+    for (int j = 0; j < 3; ++j)
+      vertexFaces[faces[i][j]].push_back(i);
+  }
+
+  v = vertices;
+
+  for (uvec3 face : faces) {
+    vec4 barycenter;
+
+    for (int i = 0; i < 3; ++i)
+      barycenter += vertices[face[i]] / 3.0f;
+
+    if (dupeVertCheck.find(barycenter) == dupeVertCheck.end()) {
+      dupeVertCheck.insert(make_pair(barycenter, dupeVertCheck.size()));
+      v.push_back(barycenter);
+    }
+
+    for (int i = 0; i < 3; ++i) {
+      int a = face[i];
+      int b = face[(i+1) % 3];
+
+      vec4 edge_avg = (vertices[a] + vertices[b]) / 2.0f;
+
+      if (dupeVertCheck.find(edge_avg) == dupeVertCheck.end()) {
+        dupeVertCheck.insert(make_pair(edge_avg, dupeVertCheck.size()));
+        v.push_back(edge_avg); 
+      }
+
+      uvec3 new_face;
+      new_face[0] = dupeVertCheck[edge_avg];
+      new_face[1] = dupeVertCheck[barycenter];
+      new_face[2] = a;
+
+      f.push_back(new_face);
+    }
+  }
+}
+
+void catmull (vector<vec4>& vertices, vector<uvec3>& faces, 
+              vector<vec4>& v, vector<uvec3>& f) {
   v.clear();
   f.clear();
 
@@ -119,62 +187,6 @@ void subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
 
 }
 
-void catmull () {
-  vec3 normal = normalize(vec3(0.0, 1.0, 0.0));
-  planes.push_back(Plane(vec3(0.0, kFloorY-8*1e-2, 0.0), normal, 10.0f, 10.0f));
-  
-  objects.push_back(Geometry(sphere_vertices, sphere_faces));
-  objects.back().normals = getVertexNormals(sphere_vertices, sphere_faces);
-
-  vector<vec4> subvided_vertices;
-  vector<uvec3> subvided_faces;
-
-  subdivide(sphere_vertices, sphere_faces, subvided_vertices, subvided_faces);
-
-  cout << subvided_vertices.size() << endl;
-  cout << sphere_vertices.size() << endl;
-
-  while (keepLoopingOpenGL()) {
-    lineP.drawAxis();
-
-    for (Geometry& geom : objects) {
-      if (showWire) {
-        wireP.draw(geom.vertices, geom.faces, geom.toWorld, BLUE);
-        for (vec4& vert : geom.vertices) {
-          mat4 T = translate(vec3(vert)) * scale(vec3(0.03f, 0.03f, 0.03f));
-          phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
-                      T * geom.toWorld, RED, vec4(eye, 1.0f));
-        }
-      }
-      else {
-        phongP.draw(geom.vertices, geom.faces, geom.normals,
-                    geom.toWorld, GREEN, vec4(eye, 1.0f));
-        shadowP.draw(geom.vertices, geom.faces, geom.toWorld);
-      }
-    }
-
-    for (vec4& vert : subvided_vertices) {
-      mat4 D = translate(vec3(2.0f, 0.0f, 0.0f));
-      mat4 T = translate(vec3(vert)) * scale(vec3(0.03f, 0.03f, 0.03f));
-      phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
-                  D * T, RED, vec4(eye, 1.0f));
-    }
-    for (vec4& vert : sphere_vertices) {
-      mat4 D = translate(vec3(2.0f, 0.0f, 0.0f));
-      mat4 T = translate(vec3(vert)) * scale(vec3(0.03f, 0.03f, 0.03f));
-      phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
-                  D * T, BLUE, vec4(eye, 1.0f));
-    }
-
-    for (Plane& plane: planes) {
-      phongP.draw(plane.vertices, plane.faces, plane.normals, I,
-                  BROWN, vec4(eye, 1.0f));
-    }
-
-    endLoopOpenGL();
-  }
-}
-
 int main (int argc, char* argv[]) {
   LoadOBJ("./obj/sphere.obj", sphere_vertices, sphere_faces, sphere_normals);
   fixSphereVertices(sphere_vertices);
@@ -191,7 +203,62 @@ int main (int argc, char* argv[]) {
   lineP.setup();
   wireP.setup();
 
-  catmull();
+  vec3 normal = normalize(vec3(0.0, 1.0, 0.0));
+  planes.push_back(Plane(vec3(0.0, kFloorY-8*1e-2, 0.0), normal, 10.0f, 10.0f));
+  
+  objects.push_back(Geometry(sphere_vertices, sphere_faces));
+  objects.back().normals = getVertexNormals(sphere_vertices, sphere_faces);
+
+  mat4 D = translate(vec3(2.0f, 0.0f, 0.0f));
+
+  vector<vec4> subvided_vertices;
+  vector<uvec3> subvided_faces;
+
+  subdivide(sphere_vertices, sphere_faces, subvided_vertices, subvided_faces);
+
+  Geometry subdivided(subvided_vertices, subvided_faces);
+  subdivided.toWorld = D;
+  subdivided.normals = getVertexNormals(subvided_vertices, subvided_faces);
+
+  objects.push_back(subdivided);
+
+  vector<vec4> subdivided_vertices1;
+  vector<uvec3> subdivided_faces1;
+
+  subdivide(subvided_vertices, subvided_faces, subdivided_vertices1, subdivided_faces1);
+
+  Geometry subdivided1(subdivided_vertices1, subdivided_faces1);
+  subdivided1.toWorld = D * D;
+  subdivided1.normals = getVertexNormals(subdivided_vertices1, subdivided_faces1);
+
+  objects.push_back(subdivided1);
+
+  while (keepLoopingOpenGL()) {
+    lineP.drawAxis();
+
+    for (Geometry& geom : objects) {
+      if (showWire) {
+        wireP.draw(geom.vertices, geom.faces, geom.toWorld, BLUE);
+        for (vec4& vert : geom.vertices) {
+          mat4 T = translate(vec3(vert)) * scale(vec3(0.03f, 0.03f, 0.03f));
+          phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
+                      geom.toWorld * T, RED, vec4(eye, 1.0f));
+        }
+      }
+      else {
+        phongP.draw(geom.vertices, geom.faces, geom.normals,
+                    geom.toWorld, GREEN, vec4(eye, 1.0f));
+        shadowP.draw(geom.vertices, geom.faces, geom.toWorld);
+      }
+    }
+
+    for (Plane& plane: planes) {
+      phongP.draw(plane.vertices, plane.faces, plane.normals, I,
+                  BROWN, vec4(eye, 1.0f));
+    }
+
+    endLoopOpenGL();
+  }
 
   cleanupOpenGL();
 }
