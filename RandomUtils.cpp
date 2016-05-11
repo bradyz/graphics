@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <map>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/rotate_vector.hpp>                              // scale
@@ -149,4 +150,44 @@ void fixSphereVertices (vector<vec4>& sphere_vertices) {
   mat4 S = scale(vec3(10.0, 10.0, 10.0));
   for (vec4& vertex: sphere_vertices)
     vertex = T * S * vertex;
+}
+
+struct vec4_sort {
+  bool operator() (const vec4& a, const vec4& b) const {
+    for (int i = 0; i < 4; ++i) {
+      if (a[i] == b[i])
+        continue;
+      return a[i] < b[i]; 
+    }
+    return false;
+  }
+};
+
+void fixDuplicateVertices (const vector<vec4>& vertices, const vector<uvec3>& faces,
+                           vector<vec4>& v, vector<uvec3>& f) {
+  v.clear();
+  f.clear();
+
+  map<vec4, int, vec4_sort> dupeVertCheck;
+
+  for (const vec4& vert : vertices) {
+    if (dupeVertCheck.find(vert) == dupeVertCheck.end()) {
+      dupeVertCheck.insert(make_pair(vert, dupeVertCheck.size()));
+      v.push_back(vert);
+    }
+  }
+
+  for (const uvec3& face : faces) {
+    uvec3 new_face;
+
+    for (int i = 0; i < 3; ++i)
+      new_face[i] = dupeVertCheck[vertices[face[i]]];
+
+    f.push_back(new_face);
+  }
+}
+
+void fixNormals (const vector<vec4>& vertices, const vector<uvec3>& faces,
+                 vector<vec4>& normals) {
+  
 }
