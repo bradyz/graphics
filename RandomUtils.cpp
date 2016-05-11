@@ -10,64 +10,65 @@
 #include <glm/gtx/string_cast.hpp>                                // to_string
 
 using namespace std;
+using namespace glm;
 
 namespace glm {
-std::ostream& operator<<(std::ostream& os, const glm::vec2& v) {
-  os << glm::to_string(v);
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
-  os << glm::to_string(v);
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const glm::vec4& v) {
-  os << glm::to_string(v);
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const glm::mat4& v) {
-  for (int i = 0; i < 4; ++i) {
-    for (int j = 0; j < 4; ++j)
-      os << std::setprecision(3) << v[j][i] << "\t";
-    os << std::endl;
+  std::ostream& operator<<(std::ostream& os, const glm::vec2& v) {
+    os << glm::to_string(v);
+    return os;
   }
-  return os;
-}
 
-std::ostream& operator<<(std::ostream& os, const glm::mat3& v) {
-  os << glm::to_string(v);
-  return os;
-}
+  std::ostream& operator<<(std::ostream& os, const glm::vec3& v) {
+    os << glm::to_string(v);
+    return os;
+  }
+
+  std::ostream& operator<<(std::ostream& os, const glm::vec4& v) {
+    os << glm::to_string(v);
+    return os;
+  }
+
+  std::ostream& operator<<(std::ostream& os, const glm::mat4& v) {
+    for (int i = 0; i < 4; ++i) {
+      for (int j = 0; j < 4; ++j)
+        os << std::setprecision(3) << v[j][i] << "\t";
+      os << std::endl;
+    }
+    return os;
+  }
+
+  std::ostream& operator<<(std::ostream& os, const glm::mat3& v) {
+    os << glm::to_string(v);
+    return os;
+  }
 }  // namespace glm
 
-vector<glm::vec4> getVertexNormals (const vector<glm::vec4>& vertices,
-                                    const vector<glm::uvec3>& faces) {
-  vector<glm::vec4> normals(vertices.size());
-  for (const glm::uvec3& face: faces) {
+vector<vec4> getVertexNormals (const vector<vec4>& vertices,
+                                    const vector<uvec3>& faces) {
+  vector<vec4> normals(vertices.size());
+  for (const uvec3& face: faces) {
     int v1 = face[0];
     int v2 = face[1];
     int v3 = face[2];
-    glm::vec3 a = glm::vec3(vertices[v1]);
-    glm::vec3 b = glm::vec3(vertices[v2]);
-    glm::vec3 c = glm::vec3(vertices[v3]);
-    glm::vec3 u = glm::normalize(b - a);
-    glm::vec3 v = glm::normalize(c - a);
-    glm::vec4 n = glm::vec4(glm::normalize(glm::cross(u, v)), 0.0f);
+    vec3 a = vec3(vertices[v1]);
+    vec3 b = vec3(vertices[v2]);
+    vec3 c = vec3(vertices[v3]);
+    vec3 u = normalize(b - a);
+    vec3 v = normalize(c - a);
+    vec4 n = vec4(normalize(cross(u, v)), 0.0f);
     normals[v1] += n;
     normals[v2] += n;
     normals[v3] += n;
   }
   for (int i = 0; i < normals.size(); ++i)
-    normals[i] = glm::normalize(normals[i]);
+    normals[i] = normalize(normals[i]);
   return normals;
 }
 
 void LoadOBJ(const string& file, 
-             vector<glm::vec4>& vertices,
-             vector<glm::uvec3>& faces,
-             vector<glm::vec4>& normals) {
+             vector<vec4>& vertices,
+             vector<uvec3>& faces,
+             vector<vec4>& normals) {
   vertices.clear();
   faces.clear();
   normals.clear();
@@ -80,12 +81,12 @@ void LoadOBJ(const string& file,
     if (type == 'f') {
       int i, j, k;
       ss >> i >> j >> k;
-      faces.push_back(glm::uvec3(i-1, j-1, k-1));
+      faces.push_back(uvec3(i-1, j-1, k-1));
     }
     else if (type == 'v') {
       float x, y, z;
       ss >> x >> y >> z;
-      vertices.push_back(glm::vec4(x, y, z, 1.0));
+      vertices.push_back(vec4(x, y, z, 1.0));
     }
   }
   normals = getVertexNormals(vertices, faces);
@@ -95,9 +96,9 @@ void LoadOBJ(const string& file,
 }
 
 void LoadOBJWithNormals(const string& file, 
-                        vector<glm::vec4>& vertices,
-                        vector<glm::uvec3>& faces,
-                        vector<glm::vec4>& normals) {
+                        vector<vec4>& vertices,
+                        vector<uvec3>& faces,
+                        vector<vec4>& normals) {
   vertices.clear();
   faces.clear();
   normals.clear();
@@ -110,16 +111,16 @@ void LoadOBJWithNormals(const string& file,
     if (type == "v") {
       double x, y, z;
       ss >> x >> y >> z;
-      vertices.push_back(glm::vec4(x, y, z, 1.0));
+      vertices.push_back(vec4(x, y, z, 1.0));
     } 
     else if (type == "vn"){
       double x, y, z;
       ss >> x >> y >> z;
-      normals.push_back(glm::vec4(x, y, z, 1.0));
+      normals.push_back(vec4(x, y, z, 1.0));
     }
     else if (type == "f") {
       // of the form 22283//22283      
-      glm::uvec3 idx;
+      uvec3 idx;
       for (int i = 0; i < 3; ++i) {
         string tmp;
         ss >> tmp;
@@ -143,9 +144,9 @@ string loadShader (const string& filename) {
   return buffer.str();
 }
 
-void fixSphereVertices (vector<glm::vec4>& sphere_vertices) {
-  glm::mat4 T = glm::translate(glm::vec3(0.0, -1.0, 0.0));
-  glm::mat4 S = glm::scale(glm::vec3(10.0, 10.0, 10.0));
-  for (glm::vec4& vertex: sphere_vertices)
+void fixSphereVertices (vector<vec4>& sphere_vertices) {
+  mat4 T = translate(vec3(0.0, -1.0, 0.0));
+  mat4 S = scale(vec3(10.0, 10.0, 10.0));
+  for (vec4& vertex: sphere_vertices)
     vertex = T * S * vertex;
 }

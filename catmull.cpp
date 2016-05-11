@@ -78,12 +78,12 @@ void subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
   for (const vec4& vert: vertices)
     dupeVertCheck.insert(make_pair(vert, dupeVertCheck.size()));
 
+  v = vertices;
+
   for (int i = 0; i < faces.size(); ++i) {
     for (int j = 0; j < 3; ++j)
       vertexFaces[faces[i][j]].push_back(i);
   }
-
-  v = vertices;
 
   for (uvec3 face : faces) {
     vec4 barycenter;
