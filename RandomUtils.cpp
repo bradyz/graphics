@@ -136,7 +136,7 @@ void LoadOBJWithNormals(const string& file,
   cout << "\t" << faces.size() << " faces." << endl;
 }
 
-string loadShader (const string filename) {
+string loadShader (const string& filename) {
   ifstream file(filename);
   stringstream buffer;
   buffer << file.rdbuf();

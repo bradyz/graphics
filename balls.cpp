@@ -55,7 +55,7 @@ void drawBoundingBoxes () {
 }
 
 void balls () {
-  int dim = 8;
+  int dim = 1;
   int count = 0;
 
   for (int i = 0; i < dim; ++i) {
@@ -152,7 +152,7 @@ void balls () {
           else {
             phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
                         toWorld, objects[i]->color, glm::vec4(eye, 1.0f));
-            // shadowP.draw(sphere_vertices, sphere_faces, toWorld);
+            shadowP.draw(sphere_vertices, sphere_faces, toWorld);
           }
         }
 

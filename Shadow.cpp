@@ -57,7 +57,7 @@ void ShadowProgram::setup () {
   CHECK_GL_ERROR(view_matrix_location = glGetUniformLocation(program_id, "view"));
 
   glm::vec3 n(0.0f, 1.0f, 0.0f); 
-  glm::vec3 b(0.0f, kFloorY + 0.08f, 0.0f);
+  glm::vec3 b(0.0f, kFloorY-3*1e-8, 0.0f);
   glm::vec3 l(LIGHT_POSITION);
 
   glm::mat4 M = glm::mat4(glm::vec4(1.0f, 0.0f, 0.0f, n.x),
@@ -76,6 +76,12 @@ void ShadowProgram::setup () {
 void ShadowProgram::draw (const vector<glm::vec4>& vertices,
                           const vector<glm::uvec3>& faces,
                           const glm::mat4& model) {
+  // for (int i = 0; i < vertices.size(); ++i) {
+  //   cout << vertices[i] << endl;
+  //   cout << shadow_matrix * vertices[i] << endl;
+  //   cout << endl;
+  //   cout << endl;
+  // }
   CHECK_GL_ERROR(glUseProgram(this->programId));
 
   CHECK_GL_ERROR(glUniformMatrix4fv(this->projection_matrix_location, 1,

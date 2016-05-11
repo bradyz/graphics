@@ -49,13 +49,18 @@ endif(APPLE)
 
 FILE(GLOB BOID_SRC *.cpp)
 list(REMOVE_ITEM BOID_SRC ${CMAKE_CURRENT_SOURCE_DIR}/balls.cpp)
+list(REMOVE_ITEM BOID_SRC ${CMAKE_CURRENT_SOURCE_DIR}/catmull.cpp)
 add_executable(boids ${BOID_SRC})
 
 FILE(GLOB BALLS_SRC *.cpp)
-MESSAGE(${BALLS_SRC})
 list(REMOVE_ITEM BALLS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/boids.cpp)
-MESSAGE(${BALLS_SRC})
+list(REMOVE_ITEM BALLS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/catmull.cpp)
 add_executable(balls ${BALLS_SRC})
+
+FILE(GLOB CATMULL_SRC *.cpp)
+list(REMOVE_ITEM CATMULL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/boids.cpp)
+list(REMOVE_ITEM CATMULL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/balls.cpp)
+add_executable(catmull ${CATMULL_SRC})
 
 if (APPLE)
   set(LDFLAGS "")
@@ -83,6 +88,13 @@ target_link_libraries(boids
                       ${LDFLAGS})
 
 target_link_libraries(balls
+                      ${OPENGL_gl_LIBRARY}
+                      ${GLFW_LIBRARIES}
+                      ${GLEW_LIBRARY}
+                      ${JPEG_LIBRARIES}
+                      ${LDFLAGS})
+
+target_link_libraries(catmull
                       ${OPENGL_gl_LIBRARY}
                       ${GLFW_LIBRARIES}
                       ${GLEW_LIBRARY}
