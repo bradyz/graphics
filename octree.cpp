@@ -40,7 +40,7 @@ OctTreeNode::OctTreeNode (const vector<RigidBody*>& newObjects,
     }
   }
 
-  for (RigidBody* obj: newObjects) {
+  for (RigidBody* obj : newObjects) {
     for (int i = 0; i < 8; ++i) {
       if (boxes[i].intersects(obj->position)) {
         items[i].push_back(obj);

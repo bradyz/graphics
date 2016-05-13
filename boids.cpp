@@ -24,6 +24,7 @@
 #include "Plane.h"
 #include "Sphere.h"
 #include "octree.h"
+#include "BVH.h"
 
 typedef std::chrono::high_resolution_clock Clock;
 typedef std::chrono::milliseconds milliseconds;
@@ -169,22 +170,38 @@ void boids () {
       changeV.push_back(totaldV);
     }
 
+    // if (showWire) {
+    //   OctTreeNode root(object_pointers, BoundingBox(minB, maxB));
+    //
+    //   vector<BoundingBox> octtreeBoxes;
+    //
+    //   root.getAllBoxes(octtreeBoxes);
+    //
+    //   for (BoundingBox& box: octtreeBoxes) {
+    //     vector<glm::vec4> vertices = box.getVertices();
+    //     vector<glm::uvec2> edges = box.getEdges();
+    //
+    //     for (glm::uvec2 edge: edges) {
+    //       glm::vec3 u = glm::vec3(vertices[edge[0]]);
+    //       glm::vec3 v = glm::vec3(vertices[edge[1]]);
+    //       lineP.drawLineSegment(u, v, RED);
+    //     }
+    //   }
+    // }
+
     if (showWire) {
-      OctTreeNode root(object_pointers, BoundingBox(minB, maxB));
+      BVHNode root(object_pointers);
 
-      vector<BoundingBox> octtreeBoxes;
+      vector<BoundingBox> bvhboxes;
+      vector<bool> isleft;
 
-      root.getAllBoxes(octtreeBoxes);
+      root.getAllBoxesDebug(bvhboxes, isleft);
 
-      for (BoundingBox& box: octtreeBoxes) {
-        vector<glm::vec4> vertices = box.getVertices();
-        vector<glm::uvec2> edges = box.getEdges();
-
-        for (glm::uvec2 edge: edges) {
-          glm::vec3 u = glm::vec3(vertices[edge[0]]);
-          glm::vec3 v = glm::vec3(vertices[edge[1]]);
-          lineP.drawLineSegment(u, v, RED);
-        }
+      for (int i = 0; i < bvhboxes.size(); ++i) {
+        if (isleft[i])
+          lineP.drawBoundingBox(bvhboxes[i], BLUE);
+        else
+          lineP.drawBoundingBox(bvhboxes[i], RED);
       }
     }
 

@@ -50,35 +50,14 @@ vec4 barycenter (const vec4& a, const vec4& b, const vec4& c) {
   return bary / 3.0f;
 }
 
-struct vec4_sort {
-  bool operator() (const vec4& a, const vec4& b) const {
-    for (int i = 0; i < 4; ++i) {
-      if (a[i] == b[i])
-        continue;
-      return a[i] < b[i]; 
-    }
-    return false;
-  }
-};
-
-struct vec4_eq {
-  bool operator() (const vec4& a, const vec4& b) {
-    return a == b;
-  }
-};
-
 void subdivide (vector<vec4>& vertices, vector<uvec3>& faces, 
                 vector<vec4>& v, vector<uvec3>& f) {
-  v.clear();
-  f.clear();
+  vector<vec4> verticesWithDuplicates;
+  vector<uvec3> facesWithDuplicates;
+
+  verticesWithDuplicates = vertices;
 
   map<int, vector<int> > vertexFaces;
-  map<vec4, int, vec4_sort> dupeVertCheck;
-
-  for (const vec4& vert: vertices)
-    dupeVertCheck.insert(make_pair(vert, dupeVertCheck.size()));
-
-  v = vertices;
 
   for (int i = 0; i < faces.size(); ++i) {
     for (int j = 0; j < 3; ++j)
@@ -91,30 +70,31 @@ void subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
     for (int i = 0; i < 3; ++i)
       barycenter += vertices[face[i]] / 3.0f;
 
-    if (dupeVertCheck.find(barycenter) == dupeVertCheck.end()) {
-      dupeVertCheck.insert(make_pair(barycenter, dupeVertCheck.size()));
-      v.push_back(barycenter);
-    }
+    int barycenter_idx = verticesWithDuplicates.size();
+    verticesWithDuplicates.push_back(barycenter);
 
     for (int i = 0; i < 3; ++i) {
       int a = face[i];
       int b = face[(i+1) % 3];
 
       vec4 edge_avg = (vertices[a] + vertices[b]) / 2.0f;
-
-      if (dupeVertCheck.find(edge_avg) == dupeVertCheck.end()) {
-        dupeVertCheck.insert(make_pair(edge_avg, dupeVertCheck.size()));
-        v.push_back(edge_avg); 
-      }
+      int edge_avg_idx = verticesWithDuplicates.size();
+      verticesWithDuplicates.push_back(edge_avg); 
 
       uvec3 new_face;
-      new_face[0] = dupeVertCheck[edge_avg];
-      new_face[1] = dupeVertCheck[barycenter];
+      new_face[0] = edge_avg_idx;
+      new_face[1] = barycenter_idx;
       new_face[2] = a;
 
-      f.push_back(new_face);
+      facesWithDuplicates.push_back(new_face);
     }
   }
+
+  cout << "with dupe: " << verticesWithDuplicates.size() << " " << facesWithDuplicates.size() << endl;
+
+  fixDuplicateVertices(verticesWithDuplicates, facesWithDuplicates, v, f);
+
+  cout << "without dupe: " << v.size() << " " << f.size() << endl;
 }
 
 void catmull (vector<vec4>& vertices, vector<uvec3>& faces, 

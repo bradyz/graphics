@@ -9,8 +9,10 @@
 #include "RandomUtils.h"
 
 #include "LineSegment.h"
+#include "BoundingBox.h"
 
 using namespace std;
+using namespace glm;
 
 string LINE_VERT = "./shaders/basic.vert";
 string LINE_GEOM = "./shaders/line.geom";
@@ -55,10 +57,10 @@ void LineSegmentProgram::setup () {
   CHECK_GL_ERROR(line_color_location = glGetUniformLocation(program_id, "line_color"));
 }
 
-void LineSegmentProgram::draw (const vector<glm::vec4>& vertices, 
-                               const vector<glm::uvec2>& segments, 
-                               const glm::mat4& model_matrix,
-                               const glm::vec4& color) {
+void LineSegmentProgram::draw (const vector<vec4>& vertices, 
+                               const vector<uvec2>& segments, 
+                               const mat4& model_matrix,
+                               const vec4& color) {
   CHECK_GL_ERROR(glUseProgram(this->programId));
 
   CHECK_GL_ERROR(glUniformMatrix4fv(this->model_matrix_location, 1, GL_FALSE,
@@ -92,51 +94,62 @@ void LineSegmentProgram::draw (const vector<glm::vec4>& vertices,
 }
 
 void LineSegmentProgram::drawAxis () {
-  vector<glm::vec4> x_axis_vertices;
-  vector<glm::uvec2> x_axis_segments;
+  vector<vec4> x_axis_vertices;
+  vector<uvec2> x_axis_segments;
 
-  glm::vec4 point1 = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-  glm::vec4 point2 = glm::vec4(1.0f, 0.0f, 0.0f, 1.0f);
+  vec4 point1 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  vec4 point2 = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 
   x_axis_vertices.push_back(point1);
   x_axis_vertices.push_back(point2);
-  x_axis_segments.push_back(glm::uvec2(1, 0));
+  x_axis_segments.push_back(uvec2(1, 0));
 
-  this->draw(x_axis_vertices, x_axis_segments, glm::mat4(), GREEN);
+  this->draw(x_axis_vertices, x_axis_segments, mat4(), GREEN);
 
-  vector<glm::vec4> z_axis_vertices;
-  vector<glm::uvec2> z_axis_segments;
+  vector<vec4> z_axis_vertices;
+  vector<uvec2> z_axis_segments;
 
-  glm::vec4 point3 = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-  glm::vec4 point4 = glm::vec4(0.0f, 0.0f, 1.0f, 1.0f);
+  vec4 point3 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  vec4 point4 = vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
   z_axis_vertices.push_back(point3);
   z_axis_vertices.push_back(point4);
-  z_axis_segments.push_back(glm::uvec2(1, 0));
+  z_axis_segments.push_back(uvec2(1, 0));
 
-  this->draw(z_axis_vertices, z_axis_segments, glm::mat4(), BLUE);
+  this->draw(z_axis_vertices, z_axis_segments, mat4(), BLUE);
 
-  vector<glm::vec4> y_axis_vertices;
-  vector<glm::uvec2> y_axis_segments;
+  vector<vec4> y_axis_vertices;
+  vector<uvec2> y_axis_segments;
 
-  glm::vec4 point5 = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-  glm::vec4 point6 = glm::vec4(0.0f, 1.0f, 0.0f, 1.0f);
+  vec4 point5 = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+  vec4 point6 = vec4(0.0f, 1.0f, 0.0f, 1.0f);
 
   y_axis_vertices.push_back(point5);
   y_axis_vertices.push_back(point6);
-  y_axis_segments.push_back(glm::uvec2(1, 0));
+  y_axis_segments.push_back(uvec2(1, 0));
 
-  this->draw(y_axis_vertices, y_axis_segments, glm::mat4(), RED);
+  this->draw(y_axis_vertices, y_axis_segments, mat4(), RED);
 }
 
-void LineSegmentProgram::drawLineSegment (const glm::vec3& u, const glm::vec3& v,
-                                          const glm::vec4& color) {
-  vector<glm::vec4> points;
-  points.push_back(glm::vec4(u, 1.0));
-  points.push_back(glm::vec4(v, 1.0));
+void LineSegmentProgram::drawLineSegment (const vec3& u, const vec3& v,
+                                          const vec4& color) {
+  vector<vec4> points;
+  points.push_back(vec4(u, 1.0));
+  points.push_back(vec4(v, 1.0));
 
-  vector<glm::uvec2> edges;
-  edges.push_back(glm::uvec2(0, 1));
+  vector<uvec2> edges;
+  edges.push_back(uvec2(0, 1));
 
-  draw(points, edges, glm::mat4(), color);
+  draw(points, edges, mat4(), color);
+}
+
+void LineSegmentProgram::drawBoundingBox (const BoundingBox& box,
+                                          const vec4& color=RED) {
+  vector<vec4> vertices = box.getVertices();
+  vector<uvec2> edges = box.getEdges();
+  for (uvec2 edge: edges) {
+    vec3 u = vec3(vertices[edge[0]]);
+    vec3 v = vec3(vertices[edge[1]]);
+    drawLineSegment(u, v, color);
+  }
 }

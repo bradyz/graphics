@@ -8,6 +8,7 @@
 #include <glm/glm.hpp>
 
 #include "Program.h"
+#include "BoundingBox.h"
 
 struct LineSegmentProgram: public Program {
   GLint line_color_location = 0; 
@@ -21,6 +22,7 @@ struct LineSegmentProgram: public Program {
              const glm::mat4& model_matrix, const glm::vec4& color);
   void drawLineSegment (const glm::vec3& u, const glm::vec3& v,
                         const glm::vec4& color);
+  void drawBoundingBox (const BoundingBox& box, const glm::vec4& color);
   void drawAxis();
 };
 

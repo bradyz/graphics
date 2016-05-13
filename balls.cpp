@@ -55,7 +55,7 @@ void drawBoundingBoxes () {
 }
 
 void balls () {
-  int dim = 1;
+  int dim = 6;
   int count = 0;
 
   for (int i = 0; i < dim; ++i) {

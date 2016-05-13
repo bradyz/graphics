@@ -52,6 +52,16 @@ struct BoundingBox {
     }
   }
 
+  float getSurfaceArea () const {
+    if (isEmpty)
+      return 0.0f;
+    float sa = 0.0f;
+    sa += 2.0f * (maxVals[0] - minVals[0]) * (maxVals[1] - minVals[1]);
+    sa += 2.0f * (maxVals[0] - minVals[0]) * (maxVals[2] - minVals[2]);
+    sa += 2.0f * (maxVals[1] - minVals[1]) * (maxVals[2] - minVals[2]);
+    return sa;
+  }
+
   std::vector<glm::vec4> getVertices () const {
     std::vector<glm::vec4> vertices;
 
