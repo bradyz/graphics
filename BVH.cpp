@@ -1,6 +1,8 @@
 #include <vector>
 #include "RigidBody.h"
 #include "BVH.h"
+#include "Sphere.h"
+#include "Intersection.h"
 
 #define LEAF_CAP 5
 #define DEPTH_CAP 2
@@ -69,4 +71,12 @@ void BVHNode::getAllBoxesDebug (vector<BoundingBox>& allBoxes, vector<bool>& isl
     isleft.push_back(false);
     right->getAllBoxesDebug(allBoxes, isleft);
   }
+}
+
+bool BVHNode::getIntersection (const Sphere& obj, Intersection& isect) {
+  Intersection tmp;
+  if (obj.intersects(box, tmp) == false)
+    return false;
+
+  return left->getIntersection(obj, isect) || right->getIntersection(obj, isect); 
 }

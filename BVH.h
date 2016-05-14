@@ -3,8 +3,10 @@
 
 #include <vector>
 
+#include "Intersection.h"
 #include "RigidBody.h"
 #include "BoundingBox.h"
+#include "Sphere.h"
 
 struct BVHNode {
   BoundingBox box;
@@ -17,6 +19,8 @@ struct BVHNode {
   void getAllBoxes (std::vector<BoundingBox>& allBoxes) const;
   void getAllBoxesDebug (std::vector<BoundingBox>& allBoxes,
                          std::vector<bool>& isleft) const;
+
+  bool getIntersection (const Sphere& obj, Intersection& isect);
 
   ~BVHNode () {
     if (left != NULL)
