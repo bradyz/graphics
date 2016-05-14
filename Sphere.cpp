@@ -10,7 +10,7 @@
 
 using namespace std;
 
-bool Sphere::intersects (Sphere& other, Intersection& isect) {
+bool Sphere::intersects (const Sphere& other, Intersection& isect) const {
   glm::vec3 normal = other.position - position;
 
   if (glm::length(normal) > radius + other.radius)
@@ -35,7 +35,7 @@ bool Sphere::intersects (Sphere& other, Intersection& isect) {
   return true;
 }
 
-bool Sphere::intersects (Plane& other, Intersection& isect) {
+bool Sphere::intersects (const Plane& other, Intersection& isect) const {
   glm::vec3 toSphere = position - other.position;
   float dotSN = glm::dot(toSphere, other.normal);
   glm::vec3 proj = other.normal * dotSN;
@@ -53,8 +53,22 @@ bool Sphere::intersects (Plane& other, Intersection& isect) {
 
   isect.displacement += -1.0f / mass * impulse;
   
-  if (penetrate > 0.01f)
-    position += glm::length(proj) * other.normal;
+  // if (penetrate > 0.01f)
+  //   position += glm::length(proj) * other.normal;
 
   return true;
+}
+
+bool Sphere::intersects (const BoundingBox& other, Intersection& isect) const {
+  glm::vec3 diff;
+  for (int i = 0; i < 3; ++i) {
+    if (position[i] < other.minVals[i]) 
+      diff[i] += other.minVals[i] - position[i];
+    if (position[i] > other.maxVals[i]) 
+      diff[i] += position[i] - other.maxVals[i];
+  }
+  if (glm::length2(diff) < radius * radius) {
+    return true;
+  }
+  return false;
 }

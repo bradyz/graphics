@@ -77,6 +77,5 @@ bool BVHNode::getIntersection (const Sphere& obj, Intersection& isect) {
   Intersection tmp;
   if (obj.intersects(box, tmp) == false)
     return false;
-
   return left->getIntersection(obj, isect) || right->getIntersection(obj, isect); 
 }

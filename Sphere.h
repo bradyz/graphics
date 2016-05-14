@@ -51,9 +51,9 @@ struct Sphere : RigidBody {
   // bool intersects (Sphere& other);
   // bool intersects (Plane& other);
 
-  bool intersects (Sphere& other, Intersection& isect);
-  bool intersects (Plane& other, Intersection& isect);
-  bool intersects (BoundingBox& other, Intersection& isect);
+  bool intersects (const Sphere& other, Intersection& isect) const;
+  bool intersects (const Plane& other, Intersection& isect) const;
+  bool intersects (const BoundingBox& other, Intersection& isect) const;
 };
 
 #endif
