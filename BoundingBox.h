@@ -7,6 +7,7 @@
 #include <glm/glm.hpp>
 
 #include "RandomUtils.h"
+#include "Ray.h"
 
 const double INF = 1e9;
 
@@ -120,6 +121,32 @@ struct BoundingBox {
       (point[1] - 1e-5 <= maxVals[1]) && 
       (point[2] + 1e-5 >= minVals[2]) && 
       (point[2] - 1e-5 <= maxVals[2]);
+  }
+
+  bool intersect(const Ray& r) const {
+    glm::vec3 R0 = r.position;
+    glm::vec3 Rd = r.direction;
+    double tMin = -1.0e308;
+    double tMax = 1.0e308;
+    for (int currentaxis = 0; currentaxis < 3; currentaxis++) {
+      double vd = Rd[currentaxis];
+      if( vd == 0.0 ) continue;
+      double v1 = minVals[currentaxis] - R0[currentaxis];
+      double v2 = maxVals[currentaxis] - R0[currentaxis];
+      // two slab intersections
+      double t1 = v1/vd;
+      double t2 = v2/vd;
+      if ( t1 > t2 ) { // swap t1 & t2
+        double ttemp = t1;
+        t1 = t2;
+        t2 = ttemp;
+      }
+      if (t1 > tMin) tMin = t1;
+      if (t2 < tMax) tMax = t2;
+      if (tMin > tMax) return false; // box is missed
+      if (tMax < 1e-5) return false; // box is behind ray
+    }
+    return true; // it made it past all 3 axes.
   }
 };
 
