@@ -73,9 +73,16 @@ void BVHNode::getAllBoxesDebug (vector<BoundingBox>& allBoxes, vector<bool>& isl
   }
 }
 
-bool BVHNode::getIntersection (const Sphere& obj, Intersection& isect) {
+bool BVHNode::getIntersection (const Sphere& obj, Intersection& isect) const {
   Intersection tmp;
   if (obj.intersects(box, tmp) == false)
     return false;
   return left->getIntersection(obj, isect) || right->getIntersection(obj, isect); 
+}
+
+bool BVHNode::getIntersection (const Ray& ray, Intersection& isect) const {
+  Intersection tmp;
+  if (box.intersects(ray, tmp) == false)
+    return false;
+  return left->getIntersection(ray, isect) || right->getIntersection(ray, isect); 
 }

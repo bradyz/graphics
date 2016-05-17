@@ -7,6 +7,7 @@
 #include "RigidBody.h"
 #include "BoundingBox.h"
 #include "Sphere.h"
+#include "Ray.h"
 
 struct BVHNode {
   BoundingBox box;
@@ -20,7 +21,8 @@ struct BVHNode {
   void getAllBoxesDebug (std::vector<BoundingBox>& allBoxes,
                          std::vector<bool>& isleft) const;
 
-  bool getIntersection (const Sphere& obj, Intersection& isect);
+  bool getIntersection (const Sphere& obj, Intersection& isect) const;
+  bool getIntersection (const Ray& ray, Intersection& isect) const;
 
   ~BVHNode () {
     if (left != NULL)

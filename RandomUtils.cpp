@@ -10,6 +10,8 @@
 #include <glm/gtx/rotate_vector.hpp>                              // scale
 #include <glm/gtx/string_cast.hpp>                                // to_string
 
+#include "BVH.h"
+
 using namespace std;
 using namespace glm;
 
@@ -187,7 +189,32 @@ void fixDuplicateVertices (const vector<vec4>& vertices, const vector<uvec3>& fa
   }
 }
 
-void fixNormals (const vector<vec4>& vertices, const vector<uvec3>& faces,
-                 vector<vec4>& normals) {
-  
+void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces, 
+                 const BVHNode& bvh) {
+  for (uvec3& face : faces) {
+    const vec4& a = vertices[face[0]];
+    const vec4& b = vertices[face[1]];
+    const vec4& c = vertices[face[2]];
+    vec3 u = vec3(normalize(b - a));
+    vec3 v = vec3(normalize(c - a));
+    vec3 normal = cross(u, v);
+
+    int numberIntersection = 0;
+
+    Ray ray;
+    ray.position = vec3((a + b + c) / 3.0f);
+    ray.direction = normal;
+
+    Intersection tmp;
+
+    while (bvh.getIntersection(ray, tmp)) {
+      ray.position = ray.position + tmp.timeHit * ray.direction;
+      ++numberIntersection;
+    }
+
+    if (numberIntersection % 2 != 0) {
+      faces[1] = vec3(c);
+      faces[2] = vec3(b);
+    }
+  }
 }
