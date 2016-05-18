@@ -5,8 +5,9 @@
 #include <glm/glm.hpp>
 
 #include "BoundingBox.h"
+#include "RigidBody.h"
 
-struct Triangle {
+struct Triangle : RigidBody {
   std::vector<glm::vec3> points;
 
   Triangle (const glm::vec3& a, const glm::vec3& b, const glm::vec3& c) {
@@ -16,7 +17,10 @@ struct Triangle {
   }
 
   virtual BoundingBox getBoundingBox () const {
-    return box(points); 
+    BoundingBox box;
+    for (glm::vec3 point : points)
+      box.add(points);
+    return box;
   }
 };
 

@@ -2,7 +2,6 @@
 #define RIGIDBODY_H
 
 #include <vector>
-
 #include <glm/glm.hpp>
 
 #include "BoundingBox.h"

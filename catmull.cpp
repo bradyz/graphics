@@ -23,6 +23,8 @@
 #include "Sphere.h"
 #include "Geometry.h"
 #include "octree.h"
+#include "BVH.h"
+#include "Triangle.h"
 
 using namespace std;
 using namespace glm;
@@ -41,6 +43,61 @@ vector<Plane> planes;
 vector<vec4> sphere_vertices;
 vector<uvec3> sphere_faces;
 vector<vec4> sphere_normals;
+
+void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces, 
+                 const BVHNode& bvh) {
+  for (uvec3& face : faces) {
+    const vec4& a = vertices[face[0]];
+    const vec4& b = vertices[face[1]];
+    const vec4& c = vertices[face[2]];
+    vec3 u = vec3(normalize(b - a));
+    vec3 v = vec3(normalize(c - a));
+    vec3 normal = cross(u, v);
+
+    int numberIntersection = 0;
+
+    Ray ray;
+    ray.position = vec3((a + b + c) / 3.0f);
+    ray.direction = normal;
+
+    Intersection tmp;
+
+    cout << "start check" << endl;
+
+    while (bvh.getIntersection(ray, tmp)) {
+      cout << "another" << endl;
+      ray.position = ray.position + tmp.timeHit * ray.direction;
+      ++numberIntersection;
+    }
+
+    cout << "hit: " << numberIntersection << endl;
+
+    if (numberIntersection % 2 != 0) {
+      cout << "swapped" << endl;
+      faces[1] = vec3(c);
+      faces[2] = vec3(b);
+    }
+  }
+}
+
+vector<Triangle> getTrianglesFromMesh (const vector<vec4>& vertices,
+                                       const vector<uvec3>& faces) {
+  vector<Triangle> triangles;
+  for (const uvec3& face : faces) {
+    const vec4& a = vertices[face[0]];
+    const vec4& b = vertices[face[1]];
+    const vec4& c = vertices[face[2]];
+    triangles.push_back(Triangle(vec3(a), vec3(b), vec3(c)));
+  } 
+  return triangles;
+}
+
+vector<RigidBody*> getRigidBodyFromTriangles (vector<Triangle>& triangles) {
+  vector<RigidBody*> rigid;
+  for (Triangle& triangle : triangles)
+    rigid.push_back(static_cast<RigidBody*>(&triangle));
+  return rigid;
+}
 
 vec4 barycenter (const vec4& a, const vec4& b, const vec4& c) {
   vec4 bary(0.0f, 0.0f, 0.0f, 0.0f);
@@ -186,35 +243,35 @@ int main (int argc, char* argv[]) {
   vec3 normal = normalize(vec3(0.0, 1.0, 0.0));
   planes.push_back(Plane(vec3(0.0, kFloorY-8*1e-2, 0.0), normal, 10.0f, 10.0f));
   
-  objects.push_back(Geometry(sphere_vertices, sphere_faces));
-  objects.back().normals = getVertexNormals(sphere_vertices, sphere_faces);
-
-  mat4 D = translate(vec3(2.0f, 0.0f, 0.0f));
-
   vector<vec4> subvided_vertices;
   vector<uvec3> subvided_faces;
 
   subdivide(sphere_vertices, sphere_faces, subvided_vertices, subvided_faces);
 
+  vector<Triangle> triangles = getTrianglesFromMesh(subvided_vertices, subvided_faces);
+  vector<RigidBody*> rigid = getRigidBodyFromTriangles(triangles);
+  BVHNode bvh(rigid);
+  fixNormals(subvided_vertices, subvided_faces, bvh);
+
   Geometry subdivided(subvided_vertices, subvided_faces);
-  subdivided.toWorld = D;
   subdivided.normals = getVertexNormals(subvided_vertices, subvided_faces);
 
   objects.push_back(subdivided);
 
-  vector<vec4> subdivided_vertices1;
-  vector<uvec3> subdivided_faces1;
-
-  subdivide(subvided_vertices, subvided_faces, subdivided_vertices1, subdivided_faces1);
-
-  Geometry subdivided1(subdivided_vertices1, subdivided_faces1);
-  subdivided1.toWorld = D * D;
-  subdivided1.normals = getVertexNormals(subdivided_vertices1, subdivided_faces1);
-
-  objects.push_back(subdivided1);
-
   while (keepLoopingOpenGL()) {
     lineP.drawAxis();
+
+    vector<BoundingBox> bvhboxes;
+    vector<bool> isleft;
+
+    bvh.getAllBoxesDebug(bvhboxes, isleft);
+
+    for (int i = 0; i < bvhboxes.size(); ++i) {
+      if (isleft[i])
+        lineP.drawBoundingBox(bvhboxes[i], BLUE);
+      else
+        lineP.drawBoundingBox(bvhboxes[i], RED);
+    }
 
     for (Geometry& geom : objects) {
       if (showWire) {

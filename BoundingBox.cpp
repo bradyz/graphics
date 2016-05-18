@@ -119,9 +119,11 @@ bool BoundingBox::intersects (const Ray& r, Intersection& isect) const {
     }
     if (t1 > tMin) tMin = t1;
     if (t2 < tMax) tMax = t2;
+    cout << tMin << " " << tMax << endl;
     if (tMin > tMax) return false; // box is missed
     if (tMax < 1e-5) return false; // box is behind ray
   }
+  cout << "sucess" << endl;
   isect.timeHit = tMin;
   return true; // it made it past all 3 axes.
 }

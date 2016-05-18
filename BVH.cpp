@@ -5,7 +5,7 @@
 #include "Intersection.h"
 
 #define LEAF_CAP 5
-#define DEPTH_CAP 2
+#define DEPTH_CAP 10
 
 using namespace std;
 using namespace glm;
@@ -84,5 +84,11 @@ bool BVHNode::getIntersection (const Ray& ray, Intersection& isect) const {
   Intersection tmp;
   if (box.intersects(ray, tmp) == false)
     return false;
-  return left->getIntersection(ray, isect) || right->getIntersection(ray, isect); 
+  bool result = false;
+  if (left != NULL)
+    result |= left->getIntersection(ray, isect);
+  if (right != NULL)
+    result |= right->getIntersection(ray, isect); 
+  cout << result << endl;
+  return result;
 }
