@@ -84,11 +84,27 @@ bool BVHNode::getIntersection (const Ray& ray, Intersection& isect) const {
   Intersection tmp;
   if (box.intersects(ray, tmp) == false)
     return false;
+
   bool result = false;
-  if (left != NULL)
-    result |= left->getIntersection(ray, isect);
-  if (right != NULL)
-    result |= right->getIntersection(ray, isect); 
+
+  if (left == NULL || right == NULL) {
+    for (RigidBody* rigid : objects) {
+      Intersection rigidIsect;
+      if (rigid->intersects(ray, rigidIsect)) {
+        result = true;
+        if (isect.hit == false || isect.timeHit > rigidIsect.timeHit)
+          isect = rigidIsect;
+      }
+    }
+  }
+  else {
+    if (left != NULL)
+      result |= left->getIntersection(ray, isect);
+    if (right != NULL)
+      result |= right->getIntersection(ray, isect); 
+  }
+
   cout << result << endl;
+
   return result;
 }

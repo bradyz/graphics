@@ -8,6 +8,7 @@
 #include <glm/gtx/rotate_vector.hpp>
 
 #include "Plane.h"
+#include "Ray.h"
 #include "BoundingBox.h"
 #include "RigidBody.h"
 #include "Intersection.h"
@@ -45,15 +46,11 @@ struct Sphere : RigidBody {
     return BoundingBox(points);
   }
 
-  // bool intersects (Sphere& other, std::vector<glm::vec3>& forces);
-  // bool intersects (Plane& other, std::vector<glm::vec3>& forces);
-
-  // bool intersects (Sphere& other);
-  // bool intersects (Plane& other);
-
   bool intersects (const Sphere& other, Intersection& isect) const;
   bool intersects (const Plane& other, Intersection& isect) const;
   bool intersects (const BoundingBox& other, Intersection& isect) const;
+
+  virtual bool intersects (const Ray& ray, Intersection& isect) const;
 };
 
 #endif

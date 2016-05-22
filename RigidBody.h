@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 
 #include "BoundingBox.h"
+#include "Ray.h"
+#include "Intersection.h"
 
 const float DT = 0.015f;
 
@@ -35,6 +37,7 @@ struct RigidBody {
   } 
 
   virtual BoundingBox getBoundingBox () const = 0;
+  virtual bool intersects (const Ray& ray, Intersection& isect) const = 0;
 };
 
 #endif

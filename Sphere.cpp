@@ -72,3 +72,6 @@ bool Sphere::intersects (const BoundingBox& other, Intersection& isect) const {
   }
   return false;
 }
+
+bool Sphere::intersects (const Ray& ray, Intersection& isect) const {
+}
