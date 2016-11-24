@@ -11,9 +11,9 @@
 const float DT = 0.015f;
 
 struct RigidBody {
-  glm::vec3 prev_acceleration;  
-  glm::vec3 acceleration;  
-  glm::vec3 velocity;  
+  glm::vec3 prev_acceleration;
+  glm::vec3 acceleration;
+  glm::vec3 velocity;
   glm::vec3 position;
 
   glm::vec4 color;
@@ -34,10 +34,12 @@ struct RigidBody {
     prev_acceleration = acceleration;
 
     return DT * velocity;
-  } 
+  }
 
   virtual BoundingBox getBoundingBox () const = 0;
-  virtual bool intersects (const Ray& ray, Intersection& isect) const = 0;
+  virtual bool intersects (const Ray& ray, Intersection& isect) {
+    return false;
+  };
 };
 
 #endif

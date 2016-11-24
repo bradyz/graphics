@@ -232,7 +232,7 @@ int main (int argc, char* argv[]) {
 
   camera_distance = 1.0f;
   eye = glm::vec3(1.0f, 1.0f, 1.0f);
-  showWire = true;
+  showWire = false;
 
   phongP.setup();
   floorP.setup();
@@ -242,7 +242,7 @@ int main (int argc, char* argv[]) {
 
   vec3 normal = normalize(vec3(0.0, 1.0, 0.0));
   planes.push_back(Plane(vec3(0.0, kFloorY-8*1e-2, 0.0), normal, 10.0f, 10.0f));
-  
+
   vector<vec4> subvided_vertices;
   vector<uvec3> subvided_faces;
 
@@ -250,8 +250,8 @@ int main (int argc, char* argv[]) {
 
   vector<Triangle> triangles = getTrianglesFromMesh(subvided_vertices, subvided_faces);
   vector<RigidBody*> rigid = getRigidBodyFromTriangles(triangles);
-  BVHNode bvh(rigid);
-  fixNormals(subvided_vertices, subvided_faces, bvh);
+  // BVHNode bvh(rigid);
+  // fixNormals(subvided_vertices, subvided_faces, bvh);
 
   Geometry subdivided(subvided_vertices, subvided_faces);
   subdivided.normals = getVertexNormals(subvided_vertices, subvided_faces);
@@ -261,17 +261,17 @@ int main (int argc, char* argv[]) {
   while (keepLoopingOpenGL()) {
     lineP.drawAxis();
 
-    vector<BoundingBox> bvhboxes;
-    vector<bool> isleft;
+    // vector<BoundingBox> bvhboxes;
+    // vector<bool> isleft;
 
-    bvh.getAllBoxesDebug(bvhboxes, isleft);
-
-    for (int i = 0; i < bvhboxes.size(); ++i) {
-      if (isleft[i])
-        lineP.drawBoundingBox(bvhboxes[i], BLUE);
-      else
-        lineP.drawBoundingBox(bvhboxes[i], RED);
-    }
+    // bvh.getAllBoxesDebug(bvhboxes, isleft);
+    //
+    // for (int i = 0; i < bvhboxes.size(); ++i) {
+    //   if (isleft[i])
+    //     lineP.drawBoundingBox(bvhboxes[i], BLUE);
+    //   else
+    //     lineP.drawBoundingBox(bvhboxes[i], RED);
+    // }
 
     for (Geometry& geom : objects) {
       if (showWire) {

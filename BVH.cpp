@@ -6,6 +6,7 @@
 
 #define LEAF_CAP 5
 #define DEPTH_CAP 10
+#define NEW_FEATURE 0
 
 using namespace std;
 using namespace glm;
@@ -40,15 +41,15 @@ BVHNode::BVHNode (const vector<RigidBody*>& objects_, int level) :
   vector<RigidBody*> rightObjects;
 
   for (int i = 0; i < objects.size(); ++i) {
-    if (objectBoxesOriginal[i].maxVals[axis] < threshold) 
+    if (objectBoxesOriginal[i].maxVals[axis] < threshold)
       leftObjects.push_back(objects[i]);
     else
       rightObjects.push_back(objects[i]);
   }
 
   if (leftObjects.size() > 0 && rightObjects.size() > 0) {
-    left = new BVHNode(leftObjects, level+1);  
-    right = new BVHNode(rightObjects, level+1);  
+    left = new BVHNode(leftObjects, level+1);
+    right = new BVHNode(rightObjects, level+1);
   }
 }
 
@@ -73,11 +74,12 @@ void BVHNode::getAllBoxesDebug (vector<BoundingBox>& allBoxes, vector<bool>& isl
   }
 }
 
+#ifdef NEW_FEATURE
 bool BVHNode::getIntersection (const Sphere& obj, Intersection& isect) const {
   Intersection tmp;
   if (obj.intersects(box, tmp) == false)
     return false;
-  return left->getIntersection(obj, isect) || right->getIntersection(obj, isect); 
+  return left->getIntersection(obj, isect) || right->getIntersection(obj, isect);
 }
 
 bool BVHNode::getIntersection (const Ray& ray, Intersection& isect) const {
@@ -101,10 +103,11 @@ bool BVHNode::getIntersection (const Ray& ray, Intersection& isect) const {
     if (left != NULL)
       result |= left->getIntersection(ray, isect);
     if (right != NULL)
-      result |= right->getIntersection(ray, isect); 
+      result |= right->getIntersection(ray, isect);
   }
 
   cout << result << endl;
 
   return result;
 }
+#endif

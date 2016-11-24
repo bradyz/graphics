@@ -74,27 +74,27 @@ bool Sphere::intersects (const BoundingBox& other, Intersection& isect) const {
   return false;
 }
 
-// bool Sphere::intersects (const Ray& ray, Intersection& isect) const {
-//   double a = 0.0;
-//   double b = 0.0;
-//   double c = - (radius * radius);
-//   for (int i = 0; i < 3; ++i) {
-//     a += ray.direction[i] * ray.direction[i];
-//     b += 2.0 * ray.direction[i] * (ray.position[i] - position[i]);
-//     c += (ray.position[i] - position[i]) * (ray.position[i] - position[i]);
-//   }
-//   if (b * b - 4.0 * a * c < 0.0) {
-//     return false;
-//   }
-//   double t1 = (-b + sqrt(b * b - 4.0 * a * c)) / (2.0 * a);
-//   double t2 = (-b - sqrt(b * b - 4.0 * a * c)) / (2.0 * a);
-//   if (t1 < 0.0 && t2 < 0.0) {
-//     return false;
-//   }
-//   isect.hit = true;
-//   if (t1 < 0.0 || t2 < 0.0)
-//     isect.timeHit = max(t1, t2);
-//   else
-//     isect.timeHit = min(t1, t2);
-//   return true;
-// }
+bool Sphere::intersects (const Ray& ray, Intersection& isect) const {
+  double a = 0.0;
+  double b = 0.0;
+  double c = - (radius * radius);
+  for (int i = 0; i < 3; ++i) {
+    a += ray.direction[i] * ray.direction[i];
+    b += 2.0 * ray.direction[i] * (ray.position[i] - position[i]);
+    c += (ray.position[i] - position[i]) * (ray.position[i] - position[i]);
+  }
+  if (b * b - 4.0 * a * c < 0.0) {
+    return false;
+  }
+  double t1 = (-b + sqrt(b * b - 4.0 * a * c)) / (2.0 * a);
+  double t2 = (-b - sqrt(b * b - 4.0 * a * c)) / (2.0 * a);
+  if (t1 < 0.0 && t2 < 0.0) {
+    return false;
+  }
+  isect.hit = true;
+  if (t1 < 0.0 || t2 < 0.0)
+    isect.timeHit = max(t1, t2);
+  else
+    isect.timeHit = min(t1, t2);
+  return true;
+}
