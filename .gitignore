@@ -1,6 +1,7 @@
 *.swp
 *.swo
 *.o
+*.out
 
 build/
 bin/

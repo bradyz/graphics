@@ -13,6 +13,7 @@ link_directories(
 include_directories(
     "/usr/local/include"
     "${GLSL_SOURCE_DIR}"
+    "${PROJECT_SOURCE_DIR}/include"
 )
 
 find_package(OpenGL REQUIRED)
@@ -31,26 +32,11 @@ include_directories(${GLFW_INCLUDE_DIRS})
 find_package(JPEG REQUIRED)
 include_directories(${JPEG_INCLUDE_DIR})
 
-if (APPLE)
-  find_library(COCOA_LIBRARY Cocoa REQUIRED)
-endif(APPLE)
-
-FILE(GLOB BOID_SRC *.cpp)
+# Boids Flocking Demo.
+FILE(GLOB BOID_SRC ./src/boids.cpp ./src/**/*.cpp)
 list(REMOVE_ITEM BOID_SRC ${CMAKE_CURRENT_SOURCE_DIR}/balls.cpp)
 list(REMOVE_ITEM BOID_SRC ${CMAKE_CURRENT_SOURCE_DIR}/catmull.cpp)
 add_executable(boids ${BOID_SRC})
-
-FILE(GLOB BALLS_SRC *.cpp)
-list(REMOVE_ITEM BALLS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/boids.cpp)
-list(REMOVE_ITEM BALLS_SRC ${CMAKE_CURRENT_SOURCE_DIR}/catmull.cpp)
-add_executable(balls ${BALLS_SRC})
-
-FILE(GLOB CATMULL_SRC *.cpp)
-list(REMOVE_ITEM CATMULL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/boids.cpp)
-list(REMOVE_ITEM CATMULL_SRC ${CMAKE_CURRENT_SOURCE_DIR}/balls.cpp)
-add_executable(catmull ${CATMULL_SRC})
-
-set(LDFLAGS "")
 
 target_link_libraries(boids
                       ${OPENGL_gl_LIBRARY}
@@ -59,12 +45,20 @@ target_link_libraries(boids
                       ${JPEG_LIBRARIES}
                       ${LDFLAGS})
 
+# Particle Physics Demo.
+FILE(GLOB BALLS_SRC ./src/balls.cpp ./src/**/*)
+add_executable(balls ${BALLS_SRC})
+
 target_link_libraries(balls
                       ${OPENGL_gl_LIBRARY}
                       ${GLFW_LIBRARIES}
                       ${GLEW_LIBRARY}
                       ${JPEG_LIBRARIES}
                       ${LDFLAGS})
+
+# # Subdivision Algorithms Demo.
+FILE(GLOB CATMULL_SRC ./src/catmull.cpp ./src/**/*)
+add_executable(catmull ${CATMULL_SRC})
 
 target_link_libraries(catmull
                       ${OPENGL_gl_LIBRARY}
