@@ -27,6 +27,14 @@ void Spring::step () {
   // cout << "dp: " << dp << endl;
   // cout << Fs << endl;
 
+  vec3 dv = (this->sphereA.velocity - this->sphereB.velocity);
+
+  // Force applied by damping.
+  vec3 Fd = this->kDamp * dot(dv, dp) * dp;
+
   this->sphereA.applyForce(-Fs);
   this->sphereB.applyForce( Fs);
+
+  this->sphereA.applyForce(-Fd);
+  this->sphereB.applyForce( Fd);
 }

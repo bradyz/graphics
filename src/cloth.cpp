@@ -147,7 +147,7 @@ void cloth() {
         continue;
       Sphere *sphere = grid[i][j];
       if (!timePaused) {
-        sphere->applyForce(GRAVITY);
+        sphere->applyForce(GRAVITY * sphere->mass);
         sphere->step(forces);
       }
     }

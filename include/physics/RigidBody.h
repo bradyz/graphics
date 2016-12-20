@@ -40,7 +40,6 @@ struct RigidBody {
     acceleration = total_force / mass;
     // velocity += (prev_acceleration + acceleration) / 2.0f * DT;
     velocity += acceleration * DT;
-    // velocity = 0.95f * glm::clamp(velocity, -25.0f, 25.0f);
     prev_acceleration = acceleration;
 
     this->force = glm::vec3(0.0, 0.0, 0.0);
