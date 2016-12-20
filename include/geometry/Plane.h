@@ -23,7 +23,7 @@ struct Plane : RigidBody {
   double wid;
 
   Plane (const glm::vec3& p, const glm::vec3& n=glm::vec3(0.0, 1.0, 0.0),
-         double l=3.0, double w=3.0) :
+         double l=10.0, double w=10.0) :
     normal(glm::normalize(n)), len(l), wid(w) {
     position = p;
 

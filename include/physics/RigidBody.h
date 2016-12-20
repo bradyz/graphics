@@ -9,7 +9,7 @@
 
 #include "physics/Intersection.h"
 
-const float DT = 0.015f;
+const float DT = 0.01f;
 
 struct RigidBody {
   glm::vec3 prev_acceleration;
@@ -25,7 +25,7 @@ struct RigidBody {
   RigidBody () : prev_acceleration(), acceleration(), velocity(), mass(1.0) { }
 
   RigidBody (const glm::vec3 &p, double m=1.0, const glm::vec4 &c=glm::vec4(1.0, 0.0, 0.0, 1.0)) :
-    position(p), mass(m), color(c) { }
+    position(p), mass(m), color(c), velocity() { }
 
   void applyForce (const glm::vec3 &force) {
     this->force += force;
@@ -38,7 +38,8 @@ struct RigidBody {
       total_force += force;
 
     acceleration = total_force / mass;
-    velocity += (prev_acceleration + acceleration) / 2.0f * DT;
+    // velocity += (prev_acceleration + acceleration) / 2.0f * DT;
+    velocity += acceleration * DT;
     // velocity = 0.95f * glm::clamp(velocity, -25.0f, 25.0f);
     prev_acceleration = acceleration;
 

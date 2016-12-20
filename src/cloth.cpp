@@ -33,7 +33,16 @@ typedef std::chrono::milliseconds milliseconds;
 
 using namespace std;
 
-glm::mat4 I;
+const int DX[] = {-1, -1, -1,  0,  0,  1, 1, 1};
+const int DY[] = {-1,  0,  1, -1,  1, -1, 0, 1};
+
+const glm::vec4 FLOOR_COLOR(0.72, 0.60, 0.41, 1.0);
+const glm::vec3 GRAVITY(0.0, -9.8, 0.0);
+const size_t CELLS = 20;
+
+const glm::mat4 I;
+
+Sphere* grid[CELLS][CELLS];
 
 PhongProgram phongP(&view_matrix, &projection_matrix);
 FloorProgram floorP(&view_matrix, &projection_matrix);
@@ -50,9 +59,6 @@ vector<glm::vec4> sphere_vertices;
 vector<glm::uvec3> sphere_faces;
 vector<glm::vec4> sphere_normals;
 
-const glm::vec4 FLOOR_COLOR(0.72f, 0.60f, 0.41f, 1.0f);
-const glm::vec3 GRAVITY(0.0, -1.0, 0.0);
-
 void setupOpengl() {
   initOpenGL();
 
@@ -67,20 +73,30 @@ void setupCloth () {
   LoadOBJ("./obj/sphere.obj", sphere_vertices, sphere_faces, sphere_normals);
   fixSphereVertices(sphere_vertices);
 
-  Sphere* sphere;
-  Spring *spring;
+  for (int i = 0; i < CELLS; i++) {
+    for (int j = 0; j < CELLS; j++) {
+      double x = i * 0.1;
+      double y = j * 0.1 + 1.0;
+      grid[i][j] = new Sphere(0.01, glm::vec3(x, 2.0, y));
+      spheres.push_back(grid[i][j]);
+    }
+  }
 
-  sphere = new Sphere(0.1, glm::vec3(1.0, 3.0, 1.0));
-  spheres.push_back(sphere);
+  for (int i = 0; i < CELLS; i++) {
+    for (int j = 0; j < CELLS; j++) {
+      for (int k = 0; k < 8; k++) {
+        int x = i + DX[k];
+        int y = j + DY[k];
+        if (x < 0 || x >= CELLS || y < 0 || y >= CELLS)
+          continue;
+        springs.push_back(new Spring(*grid[i][j], *grid[x][y]));
+      }
+    }
+  }
 
-  sphere = new Sphere(0.1, glm::vec3(1.0, 2.0, 1.0));
-  spheres.push_back(sphere);
-
-  spring = new Spring(*spheres[0], *spheres[1]);
-  springs.push_back(spring);
-
-  for (Sphere* s : spheres)
+  for (Sphere *s : spheres) {
     rigid_bodies.push_back((RigidBody*)s);
+  }
 
   planes.push_back(Plane(glm::vec3(0.0, kFloorY-1e-3, 0.0)));
 }
@@ -91,7 +107,8 @@ void cloth() {
   vector<glm::vec3> forces;
 
   for (Spring *spring : springs) {
-    spring->step();
+    if (!timePaused)
+      spring->step();
   }
 
   for (const Sphere *sphere : spheres) {
@@ -114,18 +131,32 @@ void cloth() {
     }
   }
 
-  for (int i = 1; i < spheres.size(); i++) {
-    Sphere *sphere = spheres[i];
+  for (int i = 0; i < CELLS; i++) {
+    for (int j = 0; j < CELLS; j++) {
+      for (int k = 0; k < 8; k++) {
+        int x = i + DX[k];
+        int y = j + DY[k];
+        if (x < 0 || x >= CELLS || y < 0 || y >= CELLS)
+          continue;
+        lineP.drawLineSegment(grid[i][j]->position,
+                              grid[x][y]->position,
+                              glm::vec4(0.0, 1.0, 0.0, 1.0));
+      }
 
-    sphere->applyForce(GRAVITY);
-
-    if (!timePaused) {
-      sphere->position += sphere->stepOffset(forces);
+      if (j == 0 || j == CELLS-1)
+        continue;
+      Sphere *sphere = grid[i][j];
+      if (!timePaused) {
+        sphere->applyForce(GRAVITY);
+        sphere->step(forces);
+      }
     }
   }
 }
 
 int main (int argc, char* argv[]) {
+  ios_base::sync_with_stdio(false);
+
   setupOpengl();
   setupCloth();
   while (keepLoopingOpenGL()) {

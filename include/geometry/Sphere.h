@@ -16,7 +16,7 @@
 struct Sphere : RigidBody {
   const double radius;
 
-  Sphere (double r, const glm::vec3& p, double m=1.0) : RigidBody(p, m), radius(r) { }
+  Sphere (double r, const glm::vec3& p, double m=10.0) : RigidBody(p, m), radius(r) { }
 
   void step (const std::vector<glm::vec3>& forces) {
     position += RigidBody::stepOffset(forces);

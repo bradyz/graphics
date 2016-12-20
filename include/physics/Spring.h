@@ -12,9 +12,9 @@ struct Spring {
   float kHook;
   float rLength;
 
-  Spring (Sphere& sa, Sphere& sb, double k=.2f, double l=-1.0f) :
+  Spring (Sphere& sa, Sphere& sb, double k=100000.0, double l=-1.0) :
     sphereA(sa), sphereB(sb), kHook(k) {
-      l = (l < 0) ? glm::length(sa.position - sb.position) : l;
+      rLength = (l < 0.0) ? glm::length(sa.position - sb.position) : l;
   }
 
   void step ();

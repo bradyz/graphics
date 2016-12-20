@@ -18,6 +18,15 @@ void Spring::step () {
   // Force applied by spring
   vec3 Fs = this->kHook * (dl - this->rLength) * dp;
 
+  // cout << "A: " << this->sphereA.position << endl;
+  // cout << "B: " << this->sphereB.position << endl;
+  // cout << "k: " << this->kHook << endl;
+  // cout << "dl: " << dl << endl;
+  // cout << "rl: " << this->rLength << endl;
+  // cout << "dx: " << (dl - this->rLength) << endl;
+  // cout << "dp: " << dp << endl;
+  // cout << Fs << endl;
+
   this->sphereA.applyForce(-Fs);
   this->sphereB.applyForce( Fs);
 }
