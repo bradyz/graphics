@@ -16,9 +16,7 @@
 struct Sphere : RigidBody {
   const double radius;
 
-  Sphere (double r, const glm::vec3& pos) : radius(r) {
-    position = pos;
-  }
+  Sphere (double r, const glm::vec3& p, double m=1.0) : RigidBody(p, m), radius(r) { }
 
   void step (const std::vector<glm::vec3>& forces) {
     position += RigidBody::stepOffset(forces);
@@ -27,7 +25,6 @@ struct Sphere : RigidBody {
   glm::mat4 toWorld () const {
     glm::mat4 T = glm::translate(position);
     glm::mat4 S = glm::scale(glm::vec3(radius, radius, radius));
-
     return T * S;
   }
 

@@ -34,8 +34,6 @@ include_directories(${JPEG_INCLUDE_DIR})
 
 # Boids Flocking Demo.
 FILE(GLOB BOID_SRC ./src/boids.cpp ./src/**/*.cpp)
-list(REMOVE_ITEM BOID_SRC ${CMAKE_CURRENT_SOURCE_DIR}/balls.cpp)
-list(REMOVE_ITEM BOID_SRC ${CMAKE_CURRENT_SOURCE_DIR}/catmull.cpp)
 add_executable(boids ${BOID_SRC})
 
 target_link_libraries(boids
@@ -61,6 +59,17 @@ FILE(GLOB CATMULL_SRC ./src/catmull.cpp ./src/**/*)
 add_executable(catmull ${CATMULL_SRC})
 
 target_link_libraries(catmull
+                      ${OPENGL_gl_LIBRARY}
+                      ${GLFW_LIBRARIES}
+                      ${GLEW_LIBRARY}
+                      ${JPEG_LIBRARIES}
+                      ${LDFLAGS})
+
+# Cloth Simulation Demo.
+FILE(GLOB CLOTH_SRC ./src/cloth.cpp ./src/**/*)
+add_executable(cloth ${CLOTH_SRC})
+
+target_link_libraries(cloth
                       ${OPENGL_gl_LIBRARY}
                       ${GLFW_LIBRARIES}
                       ${GLEW_LIBRARY}
