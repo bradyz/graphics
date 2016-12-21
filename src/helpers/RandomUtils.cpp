@@ -48,7 +48,7 @@ namespace glm {
 }  // namespace glm
 
 vector<vec4> getVertexNormals (const vector<vec4>& vertices,
-                                    const vector<uvec3>& faces) {
+                               const vector<uvec3>& faces) {
   vector<vec4> normals(vertices.size());
   for (const uvec3& face: faces) {
     int v1 = face[0];
