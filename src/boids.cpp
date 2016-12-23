@@ -29,7 +29,9 @@ typedef std::chrono::milliseconds milliseconds;
 
 using namespace std;
 
-float BOUNDS = 10.0f;
+const bool SHOW_BVH = false;
+
+float BOUNDS = 2.5f;
 glm::vec3 minB(-BOUNDS, -BOUNDS, -BOUNDS);
 glm::vec3 maxB(BOUNDS, BOUNDS, BOUNDS);
 
@@ -54,7 +56,7 @@ void drawBoundingBoxes () {
 }
 
 void boids () {
-  BOUNDS = 15.0f;
+  BOUNDS = 5.0f;
   glm::vec3 minB(-BOUNDS, -BOUNDS, -BOUNDS);
   glm::vec3 maxB(BOUNDS, BOUNDS, BOUNDS);
 
@@ -70,14 +72,14 @@ void boids () {
         float g = 0.01f * (rand() % 100 + 1.0f);
         float b = 0.01f * (rand() % 100 + 1.0f);
 
-        float rad = (rand() % 3 + 1) * 0.1f;
+        float rad = (rand() % 3 + 1) * 0.05f;
 
         Sphere* tmp = new Sphere(rad, glm::vec3(i * 1.0, j * 1.0 + 1.0f, k * 1.0));
         tmp->color = glm::vec4(r, g, b, 1.0f);
         tmp->velocity = glm::vec3(r * 3.0f, g * 3.0f, b * 3.0f);
-        tmp->velocity.x -= 1.5f;
-        tmp->velocity.y -= 1.5f;
-        tmp->velocity.z -= 1.5f;
+        tmp->velocity.x -= 0.5f;
+        tmp->velocity.y -= 0.5f;
+        tmp->velocity.z -= 0.5f;
 
         objects.push_back(tmp);
 
@@ -100,9 +102,9 @@ void boids () {
 
     for (int i = 0; i < 15; ++i) {
       int r = rand() % objects.size();
-      objects[r]->velocity.x += ((rand() % 11) - 5) * 2.5f;
-      objects[r]->velocity.y += ((rand() % 11) - 5) * 2.5f;
-      objects[r]->velocity.z += ((rand() % 11) - 5) * 2.5f;
+      objects[r]->velocity.x += ((rand() % 11) - 5) * 0.01f;
+      objects[r]->velocity.y += ((rand() % 11) - 5) * 0.01f;
+      objects[r]->velocity.z += ((rand() % 11) - 5) * 0.01f;
     }
 
     vector<glm::vec3> changeV;
@@ -119,7 +121,7 @@ void boids () {
         centerMass += objects[j]->position;
         float dist = glm::length2(objects[j]->position - objects[i]->position);
         if (dist < (objects[i]->radius + objects[j]->radius) * 3.5f)
-          getAway += 3.5f * dist * glm::normalize(objects[i]->position - objects[j]->position);
+          getAway += glm::normalize(objects[i]->position - objects[j]->position);
         distMap.insert(pair<float, Sphere*>(dist, objects[j]));
       }
 
@@ -142,52 +144,41 @@ void boids () {
 
       glm::vec3 dV1 = avgP - objects[i]->position;
       glm::vec3 dV2 = centerMass - objects[i]->position;
-      glm::vec3 totaldV = avgV * 0.10f + dV1 * 0.18f + dV2 * 0.28f + getAway;
+      glm::vec3 totaldV = 0.01f * avgV + 0.01f * dV1 + 0.10f * dV2 + 0.01f * getAway;
 
       if (rand() % 3 == 0)
-        totaldV += objects[leader]->velocity * 0.03f;
+        totaldV += objects[leader]->velocity * 0.01f;
 
       if (hasFood)
         totaldV += 0.40f * (foodPos - objects[i]->position);
 
-      if (theBounds.intersects(objects[i]->position) == false) {
-        glm::vec3 goTo;
-        int idx = rand() % 8;
-        int cur = 0;
-        for (int x = 0; x < 2; ++x) {
-          for (int y = 0; y < 2; ++y) {
-            for (int z = 0; z < 2; ++z) {
-              if (cur++ == idx)
-                goTo = minB + BOUNDS * glm::vec3(x, y, z);
-            }
-          }
-        }
-        totaldV += 0.3f * BOUNDS * glm::normalize(goTo - objects[i]->position);
+      if (!theBounds.intersects(objects[i]->position)) {
+        totaldV = -0.5f * glm::normalize(objects[i]->position);
       }
 
       changeV.push_back(totaldV);
     }
 
-    // if (showWire) {
-    //   OctTreeNode root(object_pointers, BoundingBox(minB, maxB));
-    //
-    //   vector<BoundingBox> octtreeBoxes;
-    //
-    //   root.getAllBoxes(octtreeBoxes);
-    //
-    //   for (BoundingBox& box: octtreeBoxes) {
-    //     vector<glm::vec4> vertices = box.getVertices();
-    //     vector<glm::uvec2> edges = box.getEdges();
-    //
-    //     for (glm::uvec2 edge: edges) {
-    //       glm::vec3 u = glm::vec3(vertices[edge[0]]);
-    //       glm::vec3 v = glm::vec3(vertices[edge[1]]);
-    //       lineP.drawLineSegment(u, v, RED);
-    //     }
-    //   }
-    // }
+    if (showWire && !SHOW_BVH) {
+      OctTreeNode root(object_pointers, BoundingBox(5.0f * minB, 5.0f * maxB));
 
-    if (showWire) {
+      vector<BoundingBox> octtreeBoxes;
+
+      root.getAllBoxes(octtreeBoxes);
+
+      for (BoundingBox& box: octtreeBoxes) {
+        vector<glm::vec4> vertices = box.getVertices();
+        vector<glm::uvec2> edges = box.getEdges();
+
+        for (glm::uvec2 edge: edges) {
+          glm::vec3 u = glm::vec3(vertices[edge[0]]);
+          glm::vec3 v = glm::vec3(vertices[edge[1]]);
+          lineP.drawLineSegment(u, v, RED);
+        }
+      }
+    }
+
+    if (showWire && SHOW_BVH) {
       BVHNode root(object_pointers);
 
       vector<BoundingBox> bvhboxes;
@@ -206,18 +197,17 @@ void boids () {
     for (int i = 0; i < objects.size(); ++i) {
       if (timePaused == false) {
         objects[i]->velocity += changeV[i];
-        objects[i]->velocity *= 0.99f;
         objects[i]->step(vector<glm::vec3>());
       }
 
       glm::mat4 toWorld = objects[i]->toWorld();
 
-      if (showWire)
+      if (showWire) {
         wireP.draw(sphere_vertices, sphere_faces, toWorld, BLUE);
+      }
       else {
         phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
                     toWorld, objects[i]->color, glm::vec4(eye, 1.0f));
-        // shadowP.draw(sphere_vertices, sphere_faces, toWorld);
       }
     }
 

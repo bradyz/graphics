@@ -1,28 +1,32 @@
-Team Member 1: Daniel Cano Talamas
-Team Member 2: Brady Zhou
+## Graphics Experiments
 
-Setup:
-Build the project with 
-cmake .
-make
+### Cloth Simulation
 
-Description: 
+References used were Physical Systems Chapter 8 (Deformable Springy Meshes) and Large Steps in Cloth Simulation (Baraff, Witkin ACM SIGGRAPH 1998).
 
-Two bins to run
-./bin/main boid
-for boids
-./bin/main balls
-for ball simulation
-Use "t" to toggle time, "m" to toggle mesh mode, "p" to add food to boids.
+Very naive cloth simulation with gravity and damping.
 
-In balls, we implemented basic particle physics and collision detection, 
-with octree. angular velocity was too difficult, so we stopped at particles.
-sphere sphere and sphere plane collision resolution. We used an octtree for 
-nearest neighbor queries and our traversal was not efficient so we just ended
-up using brute force n^2 checks.
+Cloth consists of N x N cell grid of masses (represented by spheres) that are connected to every direct neighbor.
 
-In boids, we implemented boids, where each bird is a particle that depends on 
-its neighbors velocity, the herd's center of mass, and other things, like food.
+Velocity updates are done through integrating acceleration (forward Euler).
 
-Disclaimers:
-We both also filled out the instructor survey for extra credit!
+Rendering is done by creating quads in each grid cell and using Phong shading.
+
+<img src="screenshots/cloth_phong_ripple.png" width="70%">
+
+Energy side by side visualization.
+
+<img src="screenshots/cloth_wire.png" width="35%">
+<img src="screenshots/cloth_phong.png" width="35%">
+
+### Boids Flocking Simulation
+
+Implementation of Craig Reynolds paper in ACM SIGGRAPH 1987 that simulates how birds and other artificial life moves.
+
+Movement is based on a couple factors -
+
+* "Leader" of the herd.
+* Center of flocking mass.
+* Proximity to neighbors.
+* Presense of food.
+* Random.
