@@ -14,6 +14,7 @@ using namespace glm;
 void Spring::step () {
   vec3 dp = this->sphereA.position - this->sphereB.position;
   float dl = length(dp);
+  dp = glm::normalize(dp);
 
   // Force applied by spring
   vec3 Fs = this->kHook * (dl - this->rLength) * dp;
@@ -33,4 +34,8 @@ void Spring::step () {
 
   this->sphereA.applyForce(-Fd);
   this->sphereB.applyForce( Fd);
+}
+
+double Spring::getLength() const {
+  return length(this->sphereA.position - this->sphereB.position);
 }

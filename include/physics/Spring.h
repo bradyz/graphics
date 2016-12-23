@@ -18,6 +18,8 @@ struct Spring {
       rLength = (l < 0.0) ? glm::length(sa.position - sb.position) : l;
   }
 
+  double getLength() const;
+
   void step ();
 };
 

@@ -38,11 +38,12 @@ const int DY[] = {-1,  0,  1, -1,  1, -1, 0, 1};
 
 const glm::vec4 FLOOR_COLOR(0.72, 0.60, 0.41, 1.0);
 const glm::vec3 GRAVITY(0.0, -9.8, 0.0);
-const size_t CELLS = 20;
+const size_t CELLS = 25;
 
 const glm::mat4 I;
 
 Sphere* grid[CELLS][CELLS];
+vector<Spring*> springs[CELLS][CELLS];
 
 PhongProgram phongP(&view_matrix, &projection_matrix);
 FloorProgram floorP(&view_matrix, &projection_matrix);
@@ -53,7 +54,6 @@ WireProgram wireP(&view_matrix, &projection_matrix);
 vector<Sphere*> spheres;
 vector<Plane> planes;
 vector<RigidBody*> rigid_bodies;
-vector<Spring*> springs;
 
 vector<glm::vec4> sphere_vertices;
 vector<glm::uvec3> sphere_faces;
@@ -62,6 +62,8 @@ vector<glm::vec4> sphere_normals;
 vector<glm::vec4> cloth_vertices;
 vector<glm::uvec3> cloth_faces;
 vector<glm::vec4> cloth_normals;
+
+double max_stretch = 0.0;
 
 void setupOpengl() {
   initOpenGL();
@@ -102,7 +104,7 @@ void setupCloth () {
         int y = j + DY[k];
         if (x < 0 || x >= CELLS || y < 0 || y >= CELLS)
           continue;
-        springs.push_back(new Spring(*grid[i][j], *grid[x][y]));
+        springs[i][j].push_back(new Spring(*grid[i][j], *grid[x][y]));
       }
     }
   }
@@ -132,24 +134,29 @@ void cloth() {
   for (const Sphere *sphere : spheres) {
     if (showWire) {
       glm::mat4 toWorld = sphere->toWorld();
-      wireP.draw(sphere_vertices, sphere_faces, toWorld, WHITE);
-      phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
-                  toWorld, sphere->color, glm::vec4(eye, 1.0f));
-      shadowP.draw(sphere_vertices, sphere_faces, toWorld);
+      // phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
+      //             toWorld, sphere->color, glm::vec4(eye, 1.0f));
+      // shadowP.draw(sphere_vertices, sphere_faces, toWorld);
     }
   }
 
   for (int i = 0; i < CELLS; i++) {
     for (int j = 0; j < CELLS; j++) {
-      for (int k = 0; k < 8; k++) {
-        int x = i + DX[k];
-        int y = j + DY[k];
-        if (x < 0 || x >= CELLS || y < 0 || y >= CELLS)
-          continue;
+      for (Spring* spring : springs[i][j]) {
+        double stretch = spring->getLength() - spring->rLength;
+        max_stretch = max(max_stretch, abs(stretch));
+      }
+    }
+  }
+
+  for (int i = 0; i < CELLS; i++) {
+    for (int j = 0; j < CELLS; j++) {
+      for (Spring* spring : springs[i][j]) {
         if (showWire) {
-          lineP.drawLineSegment(grid[i][j]->position,
-                                grid[x][y]->position,
-                                glm::vec4(0.0, 1.0, 0.0, 1.0));
+          double stretch = spring->getLength() - spring->rLength;
+          lineP.drawLineSegment(spring->sphereA.position,
+                                spring->sphereB.position,
+                                jet(stretch / max_stretch));
         }
       }
     }
@@ -164,14 +171,21 @@ void cloth() {
 
   // Simulation stuff.
   vector<glm::vec3> forces;
-  for (Spring *spring : springs) {
-    if (!timePaused)
-      spring->step();
-  }
   for (int i = 0; i < CELLS; i++) {
     for (int j = 0; j < CELLS; j++) {
-      if (j == 0 || j == CELLS-1)
+      for (Spring* spring : springs[i][j]) {
+        if (!timePaused)
+          spring->step();
+      }
+    }
+  }
+
+  for (int i = 0; i < CELLS; i++) {
+    for (int j = 0; j < CELLS; j++) {
+      if (j == 0 || j == (CELLS - 1))
         continue;
+      // if ((i == 0 || i == CELLS - 1) && (j == 0 || j == CELLS - 1))
+      //   continue;
       Sphere *sphere = grid[i][j];
       if (!timePaused) {
         sphere->applyForce(GRAVITY * sphere->mass);
