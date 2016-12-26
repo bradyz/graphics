@@ -42,42 +42,6 @@ vector<vec4> sphere_vertices;
 vector<uvec3> sphere_faces;
 vector<vec4> sphere_normals;
 
-void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces,
-                 const BVHNode& bvh) {
-  for (uvec3& face : faces) {
-    const vec4& a = vertices[face[0]];
-    const vec4& b = vertices[face[1]];
-    const vec4& c = vertices[face[2]];
-    vec3 u = vec3(normalize(b - a));
-    vec3 v = vec3(normalize(c - a));
-    vec3 normal = cross(u, v);
-
-    int numberIntersection = 0;
-
-    vec3 position = (a + b + c) / 3.0f;
-    vec3 direction = normal;
-    Ray ray(position, direction);
-
-    Intersection tmp;
-
-    cout << "start check" << endl;
-
-    while (bvh.getIntersection(ray, tmp)) {
-      cout << "another" << endl;
-      ray.position = ray.position + tmp.timeHit * ray.direction;
-      ++numberIntersection;
-    }
-
-    cout << "hit: " << numberIntersection << endl;
-
-    if (numberIntersection % 2 != 0) {
-      cout << "swapped" << endl;
-      faces[1] = vec3(c);
-      faces[2] = vec3(b);
-    }
-  }
-}
-
 vector<Triangle> getTrianglesFromMesh (const vector<vec4>& vertices,
                                        const vector<uvec3>& faces) {
   vector<Triangle> triangles;
@@ -95,6 +59,38 @@ vector<RigidBody*> getRigidBodyFromTriangles (vector<Triangle>& triangles) {
   for (Triangle& triangle : triangles)
     rigid.push_back(static_cast<RigidBody*>(&triangle));
   return rigid;
+}
+
+void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces) {
+  vector<Triangle> triangles = getTrianglesFromMesh(vertices, faces);
+
+  for (uvec3& face : faces) {
+    const vec4& a = vertices[face[0]];
+    const vec4& b = vertices[face[1]];
+    const vec4& c = vertices[face[2]];
+    vec3 u = vec3(normalize(b - a));
+    vec3 v = vec3(normalize(c - a));
+    vec3 normal = cross(u, v);
+
+    int numberIntersection = 0;
+
+    vec3 position = (a + b + c) / 3.0f;
+    vec3 direction = normal;
+    Ray ray(position + direction * 1e-7f, direction);
+
+    Intersection tmp;
+
+    for (const Triangle &tri : triangles)
+      numberIntersection += tri.intersects(ray, tmp);
+
+    if (numberIntersection % 2 != 0) {
+      cout << "swapped" << endl;
+      int x = face[0];
+      face[0] = face[1];
+      face[1] = x;
+      cout << "fini" << endl;
+    }
+  }
 }
 
 vec4 barycenter (const vec4& a, const vec4& b, const vec4& c) {
@@ -246,9 +242,7 @@ int main (int argc, char* argv[]) {
   // subdivide(sphere_vertices, sphere_faces, subvided_vertices, subvided_faces);
 
   vector<Triangle> triangles = getTrianglesFromMesh(subvided_vertices, subvided_faces);
-  vector<RigidBody*> rigid = getRigidBodyFromTriangles(triangles);
-  // BVHNode bvh(rigid);
-  // fixNormals(subvided_vertices, subvided_faces, bvh);
+  fixNormals(subvided_vertices, subvided_faces);
 
   Geometry subdivided(subvided_vertices, subvided_faces);
   subdivided.normals = getVertexNormals(subvided_vertices, subvided_faces);

@@ -85,6 +85,7 @@ void LoadOBJ(const string& file,
     if (type == 'f') {
       int i, j, k;
       ss >> i >> j >> k;
+      cout << i << " " << j << " " << k << endl;
       faces.push_back(uvec3(i-1, j-1, k-1));
     }
     else if (type == 'v') {
