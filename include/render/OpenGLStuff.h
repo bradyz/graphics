@@ -37,6 +37,7 @@ extern const int HEIGHT;
 extern bool timePaused;
 extern bool showWire;
 extern bool showFloor;
+extern bool do_action;
 
 extern bool hasFood;
 extern glm::vec3 foodPos;

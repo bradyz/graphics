@@ -6,7 +6,6 @@
 struct Intersection {
   glm::vec3 displacement;
   bool hit;
-
   float timeHit;
 
   Intersection () : hit(false) { }

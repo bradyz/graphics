@@ -30,3 +30,12 @@ Movement is based on a couple factors -
 * Proximity to neighbors.
 * Presense of food.
 * Random.
+
+### Mesh Smoothing (Loop Subdivision)
+
+This is a method for approximating the limit of a surface by Charles Loop in 1987 for triangular meshes.
+
+Essentially, each triangle gets split into four triangles, and the vertices get moved around based on neighbor positions.
+
+<img src="screenshots/loop_subdivision_phong.png" width="50%">
+<img src="screenshots/loop_subdivision_wire.png" width="50%">

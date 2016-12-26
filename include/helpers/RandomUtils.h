@@ -32,9 +32,7 @@ void fixSphereVertices(std::vector<glm::vec4>& sphere_vertices);
 std::vector<glm::vec4> getVertexNormals (const std::vector<glm::vec4>& vertices,
                                          const std::vector<glm::uvec3>& faces);
 
-void fixDuplicateVertices (const std::vector<glm::vec4>& vertices,
-                           const std::vector<glm::uvec3>& faces,
-                           std::vector<glm::vec4>& v,
+void fixDuplicateVertices (std::vector<glm::vec4>& v,
                            std::vector<glm::uvec3>& f);
 
 glm::vec4 jet(double val);

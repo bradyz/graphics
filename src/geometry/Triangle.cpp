@@ -19,12 +19,12 @@ BoundingBox Triangle::getBoundingBox () const {
 }
 
 bool Triangle::intersects (const Ray& ray, Intersection& isect) const {
-  vec3 o = ray.position;
-  vec3 v = ray.direction;
+  const vec3 &o = ray.position;
+  const vec3 &v = ray.direction;
 
-  vec3 a = this->points[0];
-  vec3 b = this->points[1];
-  vec3 c = this->points[2];
+  const vec3 &a = this->points[0];
+  const vec3 &b = this->points[1];
+  const vec3 &c = this->points[2];
 
   vec3 n = cross(b - a, c - a);
 
@@ -44,7 +44,7 @@ bool Triangle::intersects (const Ray& ray, Intersection& isect) const {
   float t = -x / y;
 
   // Behind ray origin.
-  if (t < 0.0)
+  if (t < 0.0f)
     return false;
 
   // Now check to see point on plane lies within triangle bounds.

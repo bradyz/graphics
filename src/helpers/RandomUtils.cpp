@@ -85,7 +85,6 @@ void LoadOBJ(const string& file,
     if (type == 'f') {
       int i, j, k;
       ss >> i >> j >> k;
-      cout << i << " " << j << " " << k << endl;
       faces.push_back(uvec3(i-1, j-1, k-1));
     }
     else if (type == 'v') {
@@ -169,28 +168,29 @@ struct vec4_sort {
   }
 };
 
-void fixDuplicateVertices (const vector<vec4>& vertices, const vector<uvec3>& faces,
-                           vector<vec4>& v, vector<uvec3>& f) {
-  v.clear();
-  f.clear();
+void fixDuplicateVertices (vector<vec4>& vertices, vector<uvec3>& faces) {
+  vector<vec4> v;
+  vector<uvec3> f;
 
   map<vec4, int, vec4_sort> dupeVertCheck;
-
   for (const vec4& vert : vertices) {
     if (dupeVertCheck.find(vert) == dupeVertCheck.end()) {
-      dupeVertCheck.insert(make_pair(vert, dupeVertCheck.size()));
+      dupeVertCheck[vert] = dupeVertCheck.size();
       v.push_back(vert);
     }
   }
 
   for (const uvec3& face : faces) {
     uvec3 new_face;
-
     for (int i = 0; i < 3; ++i)
       new_face[i] = dupeVertCheck[vertices[face[i]]];
-
     f.push_back(new_face);
   }
+
+  cout << "Removed: " << (vertices.size() - v.size()) << " vertices." << endl;
+
+  vertices = v;
+  faces = f;
 }
 
 // Helpers for jet.

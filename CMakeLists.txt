@@ -44,9 +44,8 @@ target_link_libraries(boids
                       ${LDFLAGS})
 
 # Particle Physics Demo.
-FILE(GLOB BALLS_SRC ./src/balls.cpp ./src/**/*)
+FILE(GLOB BALLS_SRC ./src/balls.cpp ./src/**/*.cpp)
 add_executable(balls ${BALLS_SRC})
-
 target_link_libraries(balls
                       ${OPENGL_gl_LIBRARY}
                       ${GLFW_LIBRARIES}
@@ -54,11 +53,10 @@ target_link_libraries(balls
                       ${JPEG_LIBRARIES}
                       ${LDFLAGS})
 
-# # Subdivision Algorithms Demo.
-FILE(GLOB CATMULL_SRC ./src/catmull.cpp ./src/**/*)
-add_executable(catmull ${CATMULL_SRC})
-
-target_link_libraries(catmull
+# Subdivision Algorithms Demo.
+FILE(GLOB LOOP_SRC ./src/loop_subdivision.cpp ./src/**/*.cpp)
+add_executable(loop_subdivision ${LOOP_SRC})
+target_link_libraries(loop_subdivision
                       ${OPENGL_gl_LIBRARY}
                       ${GLFW_LIBRARIES}
                       ${GLEW_LIBRARY}
@@ -66,7 +64,7 @@ target_link_libraries(catmull
                       ${LDFLAGS})
 
 # Cloth Simulation Demo.
-FILE(GLOB CLOTH_SRC ./src/cloth.cpp ./src/**/*)
+FILE(GLOB CLOTH_SRC ./src/cloth.cpp ./src/**/*.cpp)
 add_executable(cloth ${CLOTH_SRC})
 
 target_link_libraries(cloth

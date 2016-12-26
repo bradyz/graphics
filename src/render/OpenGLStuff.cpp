@@ -64,6 +64,10 @@ bool timePaused = true;
 bool showWire = false;
 bool showFloor = true;
 
+bool do_action = false;
+size_t action_counter = 0;
+size_t prev_action_counter = 0;
+
 bool hasFood = false;
 glm::vec3 foodPos;
 
@@ -107,8 +111,13 @@ void ErrorCallback (int error, const char* description) {
 }
 
 void KeyCallback (GLFWwindow* window, int key, int scancode, int action, int mods) {
+  do_action = false;
+
   if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     glfwSetWindowShouldClose(window, GL_TRUE);
+  else if (action == GLFW_PRESS && key == GLFW_KEY_SPACE) {
+    do_action = true;
+  }
   else if (action != GLFW_RELEASE) {
     if (key == GLFW_KEY_W) {
       if (fps_mode)
