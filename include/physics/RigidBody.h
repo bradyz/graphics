@@ -50,7 +50,9 @@ struct RigidBody {
   virtual BoundingBox getBoundingBox () const = 0;
 
   // TODO: make this pure virtual, need to implement intersects for all rigid bodies.
-  virtual bool intersects (const Ray& ray, Intersection& isect) { return false; };
+  virtual bool intersects (const Ray& ray, Intersection& isect) const {
+    return false;
+  }
 };
 
 #endif

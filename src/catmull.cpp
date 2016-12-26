@@ -42,7 +42,7 @@ vector<vec4> sphere_vertices;
 vector<uvec3> sphere_faces;
 vector<vec4> sphere_normals;
 
-void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces, 
+void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces,
                  const BVHNode& bvh) {
   for (uvec3& face : faces) {
     const vec4& a = vertices[face[0]];
@@ -54,9 +54,9 @@ void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces,
 
     int numberIntersection = 0;
 
-    Ray ray;
-    ray.position = vec3((a + b + c) / 3.0f);
-    ray.direction = normal;
+    vec3 position = (a + b + c) / 3.0f;
+    vec3 direction = normal;
+    Ray ray(position, direction);
 
     Intersection tmp;
 
@@ -105,7 +105,7 @@ vec4 barycenter (const vec4& a, const vec4& b, const vec4& c) {
   return bary / 3.0f;
 }
 
-void subdivide (vector<vec4>& vertices, vector<uvec3>& faces, 
+void subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
                 vector<vec4>& v, vector<uvec3>& f) {
   vector<vec4> verticesWithDuplicates;
   vector<uvec3> facesWithDuplicates;
@@ -134,7 +134,7 @@ void subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
 
       vec4 edge_avg = (vertices[a] + vertices[b]) / 2.0f;
       int edge_avg_idx = verticesWithDuplicates.size();
-      verticesWithDuplicates.push_back(edge_avg); 
+      verticesWithDuplicates.push_back(edge_avg);
 
       uvec3 new_face;
       new_face[0] = edge_avg_idx;
@@ -152,7 +152,7 @@ void subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
   cout << "without dupe: " << v.size() << " " << f.size() << endl;
 }
 
-void catmull (vector<vec4>& vertices, vector<uvec3>& faces, 
+void catmull (vector<vec4>& vertices, vector<uvec3>& faces,
               vector<vec4>& v, vector<uvec3>& f) {
   v.clear();
   f.clear();
@@ -179,7 +179,7 @@ void catmull (vector<vec4>& vertices, vector<uvec3>& faces,
     for (int j = 0; j < 3; ++j) {
       int a = faces[i][j];
       int b = faces[i][(j+1) % 3];
-      int neighbor = -1; 
+      int neighbor = -1;
 
       // find the other triangle that shares this edge
       for (int neighbor_idx : vertexFaces[faces[i][j]]) {
@@ -196,7 +196,7 @@ void catmull (vector<vec4>& vertices, vector<uvec3>& faces,
         }
 
         if (a_found && b_found) {
-          neighbor = neighbor_idx;   
+          neighbor = neighbor_idx;
         }
       }
 
@@ -206,7 +206,7 @@ void catmull (vector<vec4>& vertices, vector<uvec3>& faces,
       edge_avg += vertices[b];
       edge_avg += barycenters[i];
       edge_avg += barycenters[neighbor];
-    } 
+    }
 
     edge_avg /= 12.0f;
 
@@ -219,7 +219,6 @@ void catmull (vector<vec4>& vertices, vector<uvec3>& faces,
 
     v.push_back(new_vert / 3.0f);
   }
-
 }
 
 int main (int argc, char* argv[]) {
@@ -241,10 +240,10 @@ int main (int argc, char* argv[]) {
   vec3 normal = normalize(vec3(0.0, 1.0, 0.0));
   planes.push_back(Plane(vec3(0.0, kFloorY-8*1e-2, 0.0), normal, 10.0f, 10.0f));
 
-  vector<vec4> subvided_vertices;
-  vector<uvec3> subvided_faces;
+  vector<vec4> subvided_vertices = sphere_vertices;
+  vector<uvec3> subvided_faces = sphere_faces;
 
-  subdivide(sphere_vertices, sphere_faces, subvided_vertices, subvided_faces);
+  // subdivide(sphere_vertices, sphere_faces, subvided_vertices, subvided_faces);
 
   vector<Triangle> triangles = getTrianglesFromMesh(subvided_vertices, subvided_faces);
   vector<RigidBody*> rigid = getRigidBodyFromTriangles(triangles);
@@ -258,6 +257,8 @@ int main (int argc, char* argv[]) {
 
   while (keepLoopingOpenGL()) {
     lineP.drawAxis();
+
+    lineP.drawLineSegment(eye + glm::vec3(0.0f, -0.1f, 0.0f), foodPos, RED);
 
     // vector<BoundingBox> bvhboxes;
     // vector<bool> isleft;
@@ -274,11 +275,23 @@ int main (int argc, char* argv[]) {
     for (Geometry& geom : objects) {
       if (showWire) {
         wireP.draw(geom.vertices, geom.faces, geom.toWorld, BLUE);
-        for (vec4& vert : geom.vertices) {
-          mat4 T = translate(vec3(vert)) * scale(vec3(0.03f, 0.03f, 0.03f));
-          phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
-                      geom.toWorld * T, RED, vec4(eye, 1.0f));
+
+        Ray ray(eye, foodPos - eye);
+        Intersection isect;
+
+        for (const Triangle &tri : triangles) {
+          if (tri.intersects(ray, isect)) {
+            vec3 center = isect.displacement;
+            mat4 T = translate(vec3(center)) * scale(vec3(0.1f, 0.1f, 0.1f));
+            phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
+                        geom.toWorld * T, RED, vec4(eye, 1.0f));
+          }
         }
+        // for (vec4& vert : geom.vertices) {
+        //   mat4 T = translate(vec3(vert)) * scale(vec3(0.03f, 0.03f, 0.03f));
+        //   phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
+        //               geom.toWorld * T, RED, vec4(eye, 1.0f));
+        // }
       }
       else {
         phongP.draw(geom.vertices, geom.faces, geom.normals,
