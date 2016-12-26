@@ -86,7 +86,7 @@ vector<Triangle> getTrianglesFromMesh (const vector<vec4>& vertices,
     const vec4& b = vertices[face[1]];
     const vec4& c = vertices[face[2]];
     triangles.push_back(Triangle(vec3(a), vec3(b), vec3(c)));
-  } 
+  }
   return triangles;
 }
 
@@ -258,7 +258,8 @@ int main (int argc, char* argv[]) {
   while (keepLoopingOpenGL()) {
     lineP.drawAxis();
 
-    lineP.drawLineSegment(eye + glm::vec3(0.0f, -0.1f, 0.0f), foodPos, RED);
+    lineP.drawLineSegment(eye + glm::vec3(0.0f, -0.1f, 0.0f),
+                          foodPos + glm::vec3(0.0f, -0.1f, 0.0f), RED);
 
     // vector<BoundingBox> bvhboxes;
     // vector<bool> isleft;
@@ -279,14 +280,16 @@ int main (int argc, char* argv[]) {
         Ray ray(eye, foodPos - eye);
         Intersection isect;
 
-        for (const Triangle &tri : triangles) {
-          if (tri.intersects(ray, isect)) {
-            vec3 center = isect.displacement;
-            mat4 T = translate(vec3(center)) * scale(vec3(0.1f, 0.1f, 0.1f));
-            phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
-                        geom.toWorld * T, RED, vec4(eye, 1.0f));
-          }
+        for (const Triangle &tri : triangles)
+          tri.intersects(ray, isect);
+
+        if (isect.hit) {
+          vec3 center = isect.displacement;
+          mat4 T = translate(vec3(center)) * scale(vec3(0.1f, 0.1f, 0.1f));
+          phongP.draw(sphere_vertices, sphere_faces, sphere_normals,
+              geom.toWorld * T, RED, vec4(eye, 1.0f));
         }
+
         // for (vec4& vert : geom.vertices) {
         //   mat4 T = translate(vec3(vert)) * scale(vec3(0.03f, 0.03f, 0.03f));
         //   phongP.draw(sphere_vertices, sphere_faces, sphere_normals,

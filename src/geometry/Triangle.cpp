@@ -29,12 +29,12 @@ bool Triangle::intersects (const Ray& ray, Intersection& isect) const {
   vec3 n = cross(b - a, c - a);
 
   // Degenerate case: completely aligned.
-  if (dot(n, v) == 0)
-    return false;
+  if (dot(n, v) == 0.0f)
+    return (dot(a - o, n) == 0.0f);
 
   // Want to find intersection with infinite plane.
   // t, such that dot([o + vt] - p, n) = 0.
-  // Basic derivation -
+  // Some derivations -
   // dot([o - p] + vt, n) = 0.
   // dot(o - p, n) + dot(vt, n) = 0.
   // dot(o - p, n) + t dot(v, n) = 0.
@@ -50,14 +50,18 @@ bool Triangle::intersects (const Ray& ray, Intersection& isect) const {
   // Now check to see point on plane lies within triangle bounds.
   vec3 z = o + v * t;
 
-  vec3 az = a - z;
-  vec3 bz = b - z;
-  vec3 cz = c - z;
+  bool sign1 = (dot(cross(z - c, a - c), cross(z - b, c - b)) > 0.0f);
+  bool sign2 = (dot(cross(z - a, b - a), cross(z - b, c - b)) > 0.0f);
 
-  bool sign1 = (dot(cross(bz, az), cross(cz, bz)) > 0);
-  bool sign2 = (dot(cross(az, cz), cross(cz, bz)) > 0);
+  // Got a hit.
+  if (sign1 && sign2) {
+    if (!isect.hit || (t < isect.timeHit)) {
+      isect.displacement = z;
+      isect.timeHit = t;
+      isect.hit = true;
+    }
+    return true;
+  }
 
-  isect.displacement = z;
-
-  return (sign1 == sign2);
+  return false;
 }
