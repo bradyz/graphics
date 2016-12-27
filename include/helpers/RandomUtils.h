@@ -35,6 +35,9 @@ std::vector<glm::vec4> getVertexNormals (const std::vector<glm::vec4>& vertices,
 void fixDuplicateVertices (std::vector<glm::vec4>& v,
                            std::vector<glm::uvec3>& f);
 
+void fixNormals (const std::vector<glm::vec4>& vertices,
+                 std::vector<glm::uvec3>& faces);
+
 glm::vec4 jet(double val);
 
 namespace glm {

@@ -42,59 +42,6 @@ vector<vec4> cube_vertices;
 vector<uvec3> cube_faces;
 vector<vec4> cube_normals;
 
-vector<Triangle> getTrianglesFromMesh (const vector<vec4>& vertices,
-                                       const vector<uvec3>& faces) {
-  vector<Triangle> triangles;
-  for (const uvec3& face : faces) {
-    const vec4& a = vertices[face[0]];
-    const vec4& b = vertices[face[1]];
-    const vec4& c = vertices[face[2]];
-    triangles.push_back(Triangle(vec3(a), vec3(b), vec3(c)));
-  }
-  return triangles;
-}
-
-vector<RigidBody*> getRigidBodyFromTriangles (vector<Triangle>& triangles) {
-  vector<RigidBody*> rigid;
-  for (Triangle& triangle : triangles)
-    rigid.push_back(static_cast<RigidBody*>(&triangle));
-  return rigid;
-}
-
-void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces) {
-  vector<Triangle> triangles = getTrianglesFromMesh(vertices, faces);
-  size_t normals_swapped = 0;
-
-  for (uvec3& face : faces) {
-    const vec4& a = vertices[face[0]];
-    const vec4& b = vertices[face[1]];
-    const vec4& c = vertices[face[2]];
-    vec3 u = vec3(normalize(b - a));
-    vec3 v = vec3(normalize(c - a));
-    vec3 normal = cross(u, v);
-
-    int numberIntersection = 0;
-
-    vec3 position = (a + b + c) / 3.0f;
-    vec3 direction = normal;
-    Ray ray(position + direction * 1e-7f, direction);
-
-    Intersection tmp;
-
-    for (const Triangle &tri : triangles)
-      numberIntersection += tri.intersects(ray, tmp);
-
-    if (numberIntersection % 2 != 0) {
-      int x = face[0];
-      face[0] = face[1];
-      face[1] = x;
-      normals_swapped++;
-    }
-  }
-
-  cout << "Fixed " << normals_swapped << " normals." << endl;
-}
-
 vec4 barycenter (const vec4& a, const vec4& b, const vec4& c) {
   vec4 bary(0.0f, 0.0f, 0.0f, 0.0f);
   bary += a;
@@ -144,15 +91,16 @@ void loop_subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
   v = vertices;
   f.clear();
 
+  // Map from vertex index to face indices containing that vertex.
   map<int, vector<int> > vertexFaces;
 
-  for (int i = 0; i < faces.size(); ++i) {
+  for (int i = 0; i < faces.size(); ++i)
     for (int j = 0; j < 3; ++j)
       vertexFaces[faces[i][j]].push_back(i);
-  }
 
   for (int i = 0; i < faces.size(); ++i) {
     int offset = v.size();
+    bool is_manifold_edge = true;
 
     for (int j = 0; j < 3; ++j) {
       // Want to find the d.
@@ -188,8 +136,11 @@ void loop_subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
         }
       }
 
-      // Gonna segfault anyways.
-      assert(d != -1);
+      // This edge does not have two faces.
+      if (d == -1) {
+        is_manifold_edge = false;
+        break;
+      }
 
       vec4 edge_point = (3.0f / 8.0f) * vertices[a] +
                         (3.0f / 8.0f) * vertices[b] +
@@ -198,6 +149,10 @@ void loop_subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
 
       v.push_back(edge_point);
     }
+
+    // Forget the edges on the side of the mesh.
+    if (!is_manifold_edge)
+      continue;
 
     // One triangle gets split into 4.
     f.push_back(uvec3(offset + 0, offset + 1, offset + 2));
@@ -217,6 +172,7 @@ void loop_subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
       }
     }
 
+    // Take linear combination of neighbors.
     int n = unique_neighbors.size();
     float beta = 0.0f;
     if (n == 3)
@@ -231,6 +187,7 @@ void loop_subdivide (vector<vec4>& vertices, vector<uvec3>& faces,
     v[i] = new_position;
   }
 
+  // TODO: This one sucks.
   fixDuplicateVertices(v, f);
 }
 
@@ -257,9 +214,6 @@ int main (int argc, char* argv[]) {
   while (keepLoopingOpenGL()) {
     lineP.drawAxis();
 
-    lineP.drawLineSegment(eye + glm::vec3(0.0f, -0.1f, 0.0f),
-                          foodPos + glm::vec3(0.0f, -0.1f, 0.0f), RED);
-
     if (do_action) {
       Geometry& to_smooth = objects.back();
 
@@ -268,33 +222,17 @@ int main (int argc, char* argv[]) {
       loop_subdivide(to_smooth.vertices, to_smooth.faces, tmp_v, tmp_f);
 
       objects.push_back(Geometry(tmp_v, tmp_f));
-      objects.back().toWorld = to_smooth.toWorld * translate(vec3(2.0f, 0.0f, 0.0f));
+      objects.back().toWorld = to_smooth.toWorld * translate(vec3(1.5f, 0.0f, 0.0f));
       do_action = false;
     }
 
     for (Geometry& geom : objects) {
       if (showWire) {
         wireP.draw(geom.vertices, geom.faces, geom.toWorld, BLUE);
-
-        Ray ray(eye, foodPos - eye);
-        Intersection isect;
-        vector<Triangle> triangles = getTrianglesFromMesh(geom.vertices,
-                                                          geom.faces);
-
-        for (const Triangle &tri : triangles)
-          tri.intersects(ray, isect);
-
-        if (isect.hit) {
-          vec3 center = isect.displacement;
-          mat4 T = translate(vec3(center)) * scale(vec3(0.1f, 0.1f, 0.1f));
-          phongP.draw(cube_vertices, cube_faces, cube_normals,
-              geom.toWorld * T, RED, vec4(eye, 1.0f));
-        }
       }
       else {
         phongP.draw(geom.vertices, geom.faces, geom.normals,
                     geom.toWorld, GREEN, vec4(eye, 1.0f));
-        shadowP.draw(geom.vertices, geom.faces, geom.toWorld);
       }
     }
 

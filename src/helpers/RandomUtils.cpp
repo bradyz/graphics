@@ -193,6 +193,57 @@ void fixDuplicateVertices (vector<vec4>& vertices, vector<uvec3>& faces) {
   faces = f;
 }
 
+namespace {
+
+vector<Triangle> getTrianglesFromMesh (const vector<vec4>& vertices,
+                                       const vector<uvec3>& faces) {
+  vector<Triangle> triangles;
+  for (const uvec3& face : faces) {
+    const vec4& a = vertices[face[0]];
+    const vec4& b = vertices[face[1]];
+    const vec4& c = vertices[face[2]];
+    triangles.push_back(Triangle(vec3(a), vec3(b), vec3(c)));
+  }
+  return triangles;
+}
+
+} // End anonymous namespace for fix normals helper functions.
+
+void fixNormals (const vector<vec4>& vertices, vector<uvec3>& faces) {
+  vector<Triangle> triangles = getTrianglesFromMesh(vertices, faces);
+  size_t normals_swapped = 0;
+
+  for (uvec3& face : faces) {
+    const vec4& a = vertices[face[0]];
+    const vec4& b = vertices[face[1]];
+    const vec4& c = vertices[face[2]];
+    vec3 u = vec3(normalize(b - a));
+    vec3 v = vec3(normalize(c - a));
+    vec3 normal = cross(u, v);
+
+    int numberIntersection = 0;
+
+    vec3 position = (a + b + c) / 3.0f;
+    vec3 direction = normal;
+    Ray ray(position + direction * 1e-7f, direction);
+
+    Intersection tmp;
+
+    for (const Triangle &tri : triangles)
+      numberIntersection += tri.intersects(ray, tmp);
+
+    if (numberIntersection % 2 != 0) {
+      int x = face[0];
+      face[0] = face[1];
+      face[1] = x;
+      normals_swapped++;
+    }
+  }
+
+  cout << "Fixed " << normals_swapped << " normals." << endl;
+}
+
+
 // Helpers for jet.
 namespace {
   double interpolate(double val, double y0, double x0, double y1, double x1) {
