@@ -47,3 +47,21 @@ Basic implementation of particle physics using the penalty method.
 Particles are represented as small masses and gravity, basic collisions with planes and other geometry primitives work.
 
 TODO: add angular velocity and use spatial data structures to speedup collision detection.
+
+### Laplacian Smoothing
+
+This method moves every vertex to the average of its neighbors vertices (pretty naive).
+
+This can be represented in matrix form as P_new = A * P_old, where P_new, P_old are N x 4 matrices (homogeneous coordinates), and A is N x N, sparse, symmetric positive definite which is the adjacency matrix of the mesh.
+
+So we can see the first iteration of the smoothing is P_1 = A * P_0.
+
+The second iteration is P_2 = A * P_1, which is P_2 = A * A * P_0.
+
+The Kth iteration is P_k = A^k * P.
+
+This seems like a job for doing an eigendecomposition of the adjacency matrix, but the matrix matrix multiplications were surprisingly fast, since a sparse matrix was used.
+
+Using the eigendecomposition will be future work.
+
+<img src="screenshots/laplace_smooth.png" width="50%">
