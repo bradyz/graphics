@@ -32,6 +32,9 @@ include_directories(${GLFW_INCLUDE_DIRS})
 find_package(JPEG REQUIRED)
 include_directories(${JPEG_INCLUDE_DIR})
 
+find_package(Eigen3 REQUIRED)
+include_directories(${EIGEN3_INCLUDE_DIR})
+
 # Boids Flocking Demo.
 FILE(GLOB BOID_SRC ./src/boids.cpp ./src/**/*.cpp)
 add_executable(boids ${BOID_SRC})
@@ -68,6 +71,17 @@ FILE(GLOB CLOTH_SRC ./src/cloth.cpp ./src/**/*.cpp)
 add_executable(cloth ${CLOTH_SRC})
 
 target_link_libraries(cloth
+                      ${OPENGL_gl_LIBRARY}
+                      ${GLFW_LIBRARIES}
+                      ${GLEW_LIBRARY}
+                      ${JPEG_LIBRARIES}
+                      ${LDFLAGS})
+
+# Laplacian Mesh Smoothing.
+FILE(GLOB LAPLACE_SRC ./src/laplace_smooth.cpp ./src/**/*.cpp)
+add_executable(laplace_smooth ${LAPLACE_SRC})
+
+target_link_libraries(laplace_smooth
                       ${OPENGL_gl_LIBRARY}
                       ${GLFW_LIBRARIES}
                       ${GLEW_LIBRARY}

@@ -12,12 +12,12 @@ Velocity updates are done through integrating acceleration (forward Euler).
 
 Rendering is done by creating quads in each grid cell and using Phong shading.
 
-<img src="screenshots/cloth_phong_ripple.png" width="70%">
+<img src="screenshots/cloth_phong_ripple.png" width="50%">
 
 Energy side by side visualization.
 
-<img src="screenshots/cloth_wire.png" width="35%">
-<img src="screenshots/cloth_phong.png" width="35%">
+<img src="screenshots/cloth_wire.png" width="30%">
+<img src="screenshots/cloth_phong.png" width="30%">
 
 ### Boids Flocking Simulation
 
@@ -39,3 +39,11 @@ Essentially, each triangle gets split into four triangles, and the vertices get 
 
 <img src="screenshots/loop_subdivision_phong.png" width="50%">
 <img src="screenshots/loop_subdivision_wire.png" width="50%">
+
+### Particle Physics Engine
+
+Basic implementation of particle physics using the penalty method.
+
+Particles are represented as small masses and gravity, basic collisions with planes and other geometry primitives work.
+
+TODO: add angular velocity and use spatial data structures to speedup collision detection.

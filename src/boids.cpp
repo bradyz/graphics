@@ -8,7 +8,6 @@
 #include <utility>
 
 #include <GL/glew.h>
-
 #include <glm/glm.hpp>
 
 #include "data_structures/BVH.h"
