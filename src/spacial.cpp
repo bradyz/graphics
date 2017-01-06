@@ -19,14 +19,14 @@
 using namespace std;
 using namespace glm;
 
-const vec3 SCALE = vec3(10.0f, 10.0f, 10.0f);
-const vec3 TRANSLATE = vec3(0.5f, 0.0f, 0.0f);
+const vec3 SCALE = vec3(20.0f, 20.0f, 20.0f);
+const vec3 TRANSLATE = vec3(0.2f, 0.0f, 0.0f);
 
 const mat4 I;
 const mat4 POSITION_A = scale(I, SCALE) * translate(I, TRANSLATE);
 const mat4 POSITION_B = translate(I, -TRANSLATE) * scale(I, SCALE);
 
-const float SPHERE_SIZE = 0.1f;
+const float SPHERE_SIZE = 0.02f;
 
 PhongProgram phongP(&view_matrix, &projection_matrix);
 LineSegmentProgram lineP(&view_matrix, &projection_matrix);
@@ -84,17 +84,14 @@ int main (int argc, char* argv[]) {
                   object->color, glm::vec4(eye, 1.0f));
     }
 
-    vector<BoundingBox> octtreeBoxes;
-    octtree->getAllBoxes(octtreeBoxes);
+    for (const OctTreeNode *node : octtree->getAllNodes()) {
+      if (!node->isLeaf())
+        lineP.drawBoundingBox(node->box, RED);
+    }
 
-    for (BoundingBox& box: octtreeBoxes) {
-      vector<glm::vec4> vertices = box.getVertices();
-
-      for (const glm::uvec2 &edge: box.getEdges()) {
-        glm::vec3 u = glm::vec3(vertices[edge[0]]);
-        glm::vec3 v = glm::vec3(vertices[edge[1]]);
-        lineP.drawLineSegment(vertices[edge[0]], v, RED);
-      }
+    for (const OctTreeNode *node : octtree->getAllNodes()) {
+      if (node->isLeaf())
+        lineP.drawBoundingBox(node->box, BLUE);
     }
 
     endLoopOpenGL();

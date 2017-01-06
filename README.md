@@ -65,3 +65,21 @@ This seems like a job for doing an eigendecomposition of the adjacency matrix, b
 Using the eigendecomposition will be future work.
 
 <img src="screenshots/laplace_smooth.png" width="50%">
+
+### Spatial Data Structures (Oct-Tree, BVH)
+
+The octtree is a pretty elegant way to discretize a space into cells.
+
+Each node has 8 children, which hold pointers to the objects that fall into the region covered by the node.
+
+This input is a set of points that need to be partitioned spatially (hence the name).
+
+The time complexity of construction is O(n * k), where k is the depth of the tree.
+
+The number of nodes grows with O(8 ^ k), since each node has at max 8 children.
+
+Currently, only construction and visualization is implemented.
+
+TODO: collision queries and updates (addition/removal).
+
+<img src="screenshots/octtree_bunny.png" width="50%">

@@ -135,16 +135,16 @@ void LineSegmentProgram::drawLineSegment (const vec3& u, const vec3& v,
   vector<uvec2> edges;
   edges.push_back(uvec2(0, 1));
 
-  draw(points, edges, mat4(), color);
+  this->draw(points, edges, mat4(), color);
 }
 
 void LineSegmentProgram::drawBoundingBox (const BoundingBox& box,
-                                          const vec4& color=RED) {
+                                          const vec4& color) {
   vector<vec4> vertices = box.getVertices();
   vector<uvec2> edges = box.getEdges();
   for (uvec2 edge: edges) {
     vec3 u = vec3(vertices[edge[0]]);
     vec3 v = vec3(vertices[edge[1]]);
-    drawLineSegment(u, v, color);
+    this->drawLineSegment(u, v, color);
   }
 }
