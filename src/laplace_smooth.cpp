@@ -30,9 +30,9 @@ WireProgram wireP(&view_matrix, &projection_matrix);
 
 vector<Geometry> objects;
 
-vector<vec4> cube_vertices;
-vector<uvec3> cube_faces;
-vector<vec4> cube_normals;
+vector<vec4> bunny_vertices;
+vector<uvec3> bunny_faces;
+vector<vec4> bunny_normals;
 
 int x_pos = 0;
 int x_dir = 1;
@@ -107,7 +107,7 @@ void addToBack(const vector<vec4>& v, const vector<uvec3> &f) {
 }
 
 int main (int argc, char* argv[]) {
-  LoadOBJ("./obj/bunny.obj", cube_vertices, cube_faces, cube_normals);
+  LoadOBJ("./obj/bunny.obj", bunny_vertices, bunny_faces, bunny_normals);
 
   initOpenGL();
 
@@ -119,17 +119,17 @@ int main (int argc, char* argv[]) {
   lineP.setup();
   wireP.setup();
 
-  objects.push_back(Geometry(cube_vertices, cube_faces));
+  objects.push_back(Geometry(bunny_vertices, bunny_faces));
   objects.back().toWorld = scale(I, vec3(10.0f, 10.0f, 10.0f));
 
-  Eigen::SparseMatrix<double> A = adjacencyMatrix(cube_vertices.size(), cube_faces);
-  Eigen::MatrixXd P = convertToEigenMatrix(cube_vertices);
+  Eigen::SparseMatrix<double> A = adjacencyMatrix(bunny_vertices.size(), bunny_faces);
+  Eigen::MatrixXd P = convertToEigenMatrix(bunny_vertices);
   Eigen::MatrixXd AP = P;
 
   int num = 0;
   for (num = 0; num < 625; num++) {
       AP = A * AP;
-      addToBack(convertToVectorVec4(AP), cube_faces);
+      addToBack(convertToVectorVec4(AP), bunny_faces);
   }
 
   while (keepLoopingOpenGL()) {
@@ -138,7 +138,7 @@ int main (int argc, char* argv[]) {
     if (do_action) {
       num++;
       AP = A * AP;
-      addToBack(convertToVectorVec4(AP, true), cube_faces);
+      addToBack(convertToVectorVec4(AP, true), bunny_faces);
       do_action = false;
     }
 

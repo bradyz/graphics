@@ -1,6 +1,4 @@
 #include <iostream>
-#include <algorithm>
-#include <cmath>
 
 #include <glm/glm.hpp>
 #include <glm/gtx/norm.hpp>
@@ -12,13 +10,12 @@ using namespace std;
 using namespace glm;
 
 void Spring::step () {
-  vec3 dp = this->sphereA.position - this->sphereB.position;
+  vec3 dp = (this->sphereA.position - this->sphereB.position);
   float dl = length(dp);
-  dp = glm::normalize(dp);
+  dp = normalize(dp);
 
   // Force applied by spring
   vec3 Fs = this->kHook * (dl - this->rLength) * dp;
-
 
   vec3 dv = (this->sphereA.velocity - this->sphereB.velocity);
 

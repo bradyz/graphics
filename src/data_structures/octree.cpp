@@ -11,21 +11,30 @@
 
 using namespace std;
 
-OctTreeNode::OctTreeNode (const vector<RigidBody*>& newObjects,
-                          BoundingBox bbox, int level) :
-  box(bbox) {
+const int LEAF_CAP = 5;
+const int DEPTH_CAP = 3;
+
+OctTreeNode::OctTreeNode (const vector<RigidBody*>& objects, int level) {
   for (int i = 0; i < 8; ++i)
     cells[i] = NULL;
 
-  if (newObjects.size() <= 3 || level > 5)
+  for (RigidBody *object : objects)
+    this->box.add(object->position);
+
+  if (level == 0)
+    cout << this->box << endl;
+
+  // Leaf case.
+  if (objects.size() <= LEAF_CAP || level > DEPTH_CAP) {
+    for (RigidBody *object : objects)
+      this->objects.push_back(object);
     return;
+  }
 
-  float dx = (box.maxVals[0] - box.minVals[0]) / 2.0f;
-  float dy = (box.maxVals[1] - box.minVals[1]) / 2.0f;
-  float dz = (box.maxVals[2] - box.minVals[2]) / 2.0f;
+  float dx = -1.0f;
 
-  // must be uniform
-  assert(abs(dx - dy) < 1e-5 && abs(dy - dz) < 1e-5);
+  for (int i = 0; i < 3; i++)
+    dx = max(dx, (box.maxVals[i] - box.minVals[i]) / 2.0f);
 
   vector<RigidBody*> items[8];
   BoundingBox boxes[8];
@@ -40,19 +49,59 @@ OctTreeNode::OctTreeNode (const vector<RigidBody*>& newObjects,
     }
   }
 
-  for (RigidBody* obj : newObjects) {
+  for (RigidBody* obj : objects) {
     for (int i = 0; i < 8; ++i) {
-      if (boxes[i].intersects(obj->position)) {
+      if (boxes[i].intersects(obj->position))
         items[i].push_back(obj);
-      }
     }
   }
 
   for (int i = 0; i < 8; ++i) {
     if (items[i].size() > 0)
-      cells[i] = new OctTreeNode(items[i], boxes[i], level+1); 
+      cells[i] = new OctTreeNode(items[i], level+1);
   }
 }
+
+// OctTreeNode::OctTreeNode (const vector<Geometry*>& objects, int level) {
+//   for (int i = 0; i < 8; ++i)
+//     cells[i] = NULL;
+//
+//   if (objects.size() <= LEAF_CAP || level >= DEPTH_CAP)
+//     return;
+//
+//   for (Geometry *object : objects)
+//     this->box.add(object->vertices);
+//
+//   float dx = (box.maxVals[0] - box.minVals[0]) / 2.0f;
+//   float dy = (box.maxVals[1] - box.minVals[1]) / 2.0f;
+//   float dz = (box.maxVals[2] - box.minVals[2]) / 2.0f;
+//   dx = max(dx, max(dy, dz));
+//
+//   vector<RigidBody*> items[8];
+//   BoundingBox boxes[8];
+//
+//   int idx = 0;
+//   for (int i = 0; i < 2; ++i) {
+//     for (int j = 0; j < 2; ++j) {
+//       for (int k = 0; k < 2; ++k) {
+//         glm::vec3 tmpMin = box.minVals + glm::vec3(i * dx, j * dx, k * dx);
+//         boxes[idx++] = BoundingBox(tmpMin, tmpMin + dx);
+//       }
+//     }
+//   }
+//
+//   for (RigidBody* obj : newObjects) {
+//     for (int i = 0; i < 8; ++i) {
+//       if (boxes[i].intersects(obj->position))
+//         items[i].push_back(obj);
+//     }
+//   }
+//
+//   for (int i = 0; i < 8; ++i) {
+//     if (items[i].size() > 0)
+//       cells[i] = new OctTreeNode(items[i], boxes[i], level+1);
+//   }
+// }
 
 void OctTreeNode::getAllBoxes (vector<BoundingBox>& allBoxes) const {
   float dx = (box.maxVals[0] - box.minVals[0]) / 2.0f;

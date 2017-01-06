@@ -20,6 +20,8 @@ struct Geometry {
   void updateNormals() {
     this->normals = getVertexNormals(this->vertices, this->faces);
   }
+
+
 };
 
 #endif

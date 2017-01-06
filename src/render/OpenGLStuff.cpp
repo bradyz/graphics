@@ -228,7 +228,6 @@ void initOpenGL () {
   CHECK_SUCCESS(window != nullptr);
 
   glfwMakeContextCurrent(window);
-  glewExperimental = GL_TRUE;
   CHECK_SUCCESS(glewInit() == GLEW_OK);
   glGetError();  // clear GLEW's error for it
 
@@ -246,25 +245,27 @@ void initOpenGL () {
   // Generate buffer objects
   for (int i = 0; i < kNumVaos; ++i)
     CHECK_GL_ERROR(glGenBuffers(kNumVbos, &buffer_objects[i][0]));
+
+  // glEnable(GL_CULL_FACE);
+  // glCullFace(GL_BACK);
+
+  glClearColor(0.9f, 0.9f, 0.9f, 0.9f);
+  glEnable(GL_DEPTH_TEST);
+  glEnable(GL_MULTISAMPLE);
+  glEnable(GL_BLEND);
+  glEnable(GL_LINE_SMOOTH);
+  glEnable(GL_POLYGON_SMOOTH);
+  glDepthFunc(GL_LESS);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 bool keepLoopingOpenGL () {
   if (glfwWindowShouldClose(window))
     return false;
 
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   glfwGetFramebufferSize(window, &window_width, &window_height);
   glViewport(0, 0, window_width, window_height);
-  glClearColor(0.9f, 0.9f, 0.9f, 0.9f);
-  glEnable(GL_DEPTH_TEST);
-  glEnable(GL_MULTISAMPLE);
-  glEnable(GL_BLEND);
-  glEnable(GL_CULL_FACE);
-  glEnable(GL_LINE_SMOOTH);
-  glEnable(GL_POLYGON_SMOOTH);
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  glDepthFunc(GL_LESS);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glCullFace(GL_BACK);
 
   // Compute our view, and projection matrices.
   if (fps_mode)

@@ -21,7 +21,6 @@
 #include "physics/Intersection.h"
 #include "physics/Spring.h"
 
-#include "render/Floor.h"
 #include "render/LineSegment.h"
 #include "render/OpenGLStuff.h"
 #include "render/Phong.h"
@@ -36,9 +35,8 @@ using namespace std;
 const int DX[] = {-1, -1, -1,  0,  0,  1, 1, 1};
 const int DY[] = {-1,  0,  1, -1,  1, -1, 0, 1};
 
-const glm::vec4 FLOOR_COLOR(0.72, 0.60, 0.41, 1.0);
 const glm::vec3 GRAVITY(0.0, -9.8, 0.0);
-const size_t CELLS = 25;
+const size_t CELLS = 100;
 
 const glm::mat4 I;
 
@@ -46,7 +44,6 @@ Sphere* grid[CELLS][CELLS];
 vector<Spring*> springs[CELLS][CELLS];
 
 PhongProgram phongP(&view_matrix, &projection_matrix);
-FloorProgram floorP(&view_matrix, &projection_matrix);
 ShadowProgram shadowP(&view_matrix, &projection_matrix);
 LineSegmentProgram lineP(&view_matrix, &projection_matrix);
 WireProgram wireP(&view_matrix, &projection_matrix);
@@ -69,7 +66,6 @@ void setupOpengl() {
   initOpenGL();
 
   phongP.setup();
-  floorP.setup();
   shadowP.setup();
   lineP.setup();
   wireP.setup();
@@ -105,6 +101,11 @@ void setupCloth () {
         if (x < 0 || x >= CELLS || y < 0 || y >= CELLS)
           continue;
         springs[i][j].push_back(new Spring(*grid[i][j], *grid[x][y]));
+
+        x = i + 2 * DX[k];
+        y = j + 2 * DY[k];
+        if (x < 0 || x >= CELLS || y < 0 || y >= CELLS)
+          continue;
       }
     }
   }
@@ -112,8 +113,6 @@ void setupCloth () {
   for (Sphere *s : spheres) {
     rigid_bodies.push_back((RigidBody*)s);
   }
-
-  planes.push_back(Plane(glm::vec3(0.0, kFloorY-1e-3, 0.0)));
 }
 
 void cloth() {
@@ -128,7 +127,7 @@ void cloth() {
         cloth_vertices.push_back(glm::vec4(grid[i][j]->position, 1.0));
     cloth_normals = getVertexNormals(cloth_vertices, cloth_faces);
     phongP.draw(cloth_vertices, cloth_faces, cloth_normals,
-                I, glm::vec4(0.0, 0.0, 1.0, 1.0), glm::vec4(eye, 1.0f));
+                I, glm::vec4(1.0, 0.0, 0.0, 1.0), glm::vec4(eye, 1.0f));
   }
 
   for (const Sphere *sphere : spheres) {
@@ -159,13 +158,6 @@ void cloth() {
                                 jet(stretch / max_stretch));
         }
       }
-    }
-  }
-
-  for (const Plane& plane: planes) {
-    if (showFloor) {
-      phongP.draw(plane.vertices, plane.faces, plane.normals, I,
-                  FLOOR_COLOR, glm::vec4(eye, 1.0f));
     }
   }
 

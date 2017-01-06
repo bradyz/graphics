@@ -87,3 +87,14 @@ target_link_libraries(laplace_smooth
                       ${GLEW_LIBRARY}
                       ${JPEG_LIBRARIES}
                       ${LDFLAGS})
+
+# Spacial Data Structures.
+FILE(GLOB SPACIAL_SRC ./src/spacial.cpp ./src/**/*.cpp)
+add_executable(spacial ${SPACIAL_SRC})
+
+target_link_libraries(spacial
+                      ${OPENGL_gl_LIBRARY}
+                      ${GLFW_LIBRARIES}
+                      ${GLEW_LIBRARY}
+                      ${JPEG_LIBRARIES}
+                      ${LDFLAGS})
